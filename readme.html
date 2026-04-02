@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tarot Pro Plugin Documentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        .section { margin-bottom: 30px; }
+        code { background: #f4f4f4; padding: 2px 4px; }
+    </style>
+</head>
+<body>
+    <h1>Tarot Pro Plugin</h1>
+
+    <div class="section">
+        <h2>Tính năng</h2>
+        <ul>
+            <li>Custom Post Type cho quản lý lá bài Tarot</li>
+            <li>Meta box cho ý nghĩa theo ngữ cảnh (upright/reversed)</li>
+            <li>SEO settings cho từng lá bài</li>
+            <li>Import 78 lá bài từ file JSON</li>
+            <li>Rút bài ngẫu nhiên với AI phân tích</li>
+            <li>Shortcode [tarot_draw] để hiển thị form rút bài</li>
+            <li>Admin interface sử dụng native WordPress</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Cài đặt</h2>
+        <ol>
+            <li>Upload plugin vào thư mục wp-content/plugins/</li>
+            <li>Kích hoạt plugin trong WordPress admin</li>
+            <li>Đi đến Tarot > Settings để cấu hình OpenAI API key</li>
+            <li>Đi đến Tarot > Import để import 78 lá bài</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>Cách sử dụng admin</h2>
+        <h3>Quản lý lá bài</h3>
+        <p>Đi đến <strong>Tarot Cards</strong> trong menu admin để quản lý từng lá bài:</p>
+        <ul>
+            <li><strong>Title</strong>: Tên lá bài (vd: The Fool)</li>
+            <li><strong>Excerpt</strong>: Mô tả ngắn (lưu từ description trong JSON)</li>
+            <li><strong>Content Editor</strong>: Viết nội dung chi tiết về lá bài</li>
+            <li><strong>Featured Image</strong>: Ảnh lá bài</li>
+            <li><strong>Card Meaning meta box</strong>: 
+                <ul>
+                    <li>Ý nghĩa Xuôi (Upright)</li>
+                    <li>Ý nghĩa Ngược (Reversed)</li>
+                </ul>
+            </li>
+            <li><strong>SEO Settings meta box</strong>: SEO Title, Description, Keywords</li>
+        </ul>
+
+        <h3>Import lá bài</h3>
+        <p>Đi đến <strong>Tarot > Import</strong> để import toàn bộ 78 lá bài từ file JSON.</p>
+    </div>
+
+    <div class="section">
+        <h2>Cấu trúc dữ liệu</h2>
+        <p><strong>Tarot Card Post (WordPress native)</strong></p>
+        <ul>
+            <li>post_title = Tên lá bài</li>
+            <li>post_excerpt = Description (mô tả ngắn)</li>
+            <li>post_content = Nội dung chi tiết</li>
+            <li>post_thumbnail = Ảnh lá bài</li>
+            <li>post_meta _tarot_upright = Ý nghĩa xuôi</li>
+            <li>post_meta _tarot_reversed = Ý nghĩa ngược</li>
+            <li>post_meta _tarot_arcana = Arcana type</li>
+            <li>post_meta _tarot_seo_* = SEO settings</li>
+        </ul>
+
+        <p><strong>Bảng tarot_cards (backup query)</strong></p>
+        <ul>
+            <li>Được tạo từ import, dùng để query nhanh</li>
+            <li>Chứa name, slug, arcana, image, description, upright_meaning, reversed_meaning</li>
+        </ul>
+
+        <p><strong>Bảng tarot_readings (history)</strong></p>
+        <ul>
+            <li>card_id, question, context, position, ai_text, created_at</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>API Settings</h2>
+        <p>Cần cấu hình OpenAI API key để sử dụng tính năng AI phân tích. Lấy key từ <a href="https://platform.openai.com/api-keys">OpenAI Platform</a>.</p>
+    </div>
+
+    <div class="section">
+        <h2>Database Tables</h2>
+        <ul>
+            <li><code>wp_tarot_cards</code> - Thông tin cơ bản lá bài</li>
+            <li><code>wp_tarot_card_meanings</code> - Ý nghĩa theo ngữ cảnh</li>
+            <li><code>wp_tarot_readings</code> - Lịch sử rút bài</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{
+  "name": "The Fool",
+  "slug": "the-fool",
+  "arcana": "major",
+  "number": 0,
+  "deck": "rider-waite",
+  "image": "the-fool.jpg",
+
+  "description": "New beginnings, freedom, and stepping into the unknown.",
+
+  "keywords_upright": [
+    "new beginnings",
+    "freedom",
+    "adventure"
+  ],
+  "keywords_reversed": [
+    "recklessness",
+    "fear",
+    "naive"
+  ],
+
+  "meaning_upright": "A new journey is beginning. Take a leap of faith.",
+  "meaning_reversed": "You may be acting without thinking or avoiding change.",
+
+  "love_upright": "New love or fresh start.",
+  "love_reversed": "Immaturity or fear of commitment.",
+
+  "career_upright": "New opportunity or direction.",
+  "career_reversed": "Risky or poor decisions.",
+
+  "finance_upright": "New financial start.",
+  "finance_reversed": "Careless spending.",
+
+  "health_upright": "Trust your path.",
+  "health_reversed": "Disconnected from intuition.",
+
+  "advice_upright": "Take the leap.",
+  "advice_reversed": "Think before acting.",
+
+  "advice_message": "Start before you're ready.",
+
+  "yes_no_upright": "Yes",
+  "yes_no_reversed": "No",
+
+  "symbolism": {
+    "cliff": "Unknown",
+    "dog": "Instinct",
+    "sun": "Clarity"
+  },
+
+  "element": "Air",
+  "planet": "Uranus"
+}
