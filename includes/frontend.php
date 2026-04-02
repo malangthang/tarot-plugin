@@ -22,13 +22,26 @@ add_action('template_redirect', function () {
         ARRAY_A
     );
 
-    if (!$card) wp_die('Not found');
+    if (!$card) {
+        wp_die('Card not found');
+        return;
+    }
+
+    // Prevent output during plugin activation or admin requests
+    if (defined('WP_INSTALLING') || is_admin() || wp_doing_ajax()) {
+        return;
+    }
 
     $title = $card['custom_title'] ?: $card['name'];
     $content = $card['custom_content'] ?: $card['meaning_upright'];
 
-    echo "<h1>$title</h1>";
-    echo "<div>$content</div>";
+    // Use proper WordPress template loading
+    get_header();
+    echo "<div class='tarot-card-single'>";
+    echo "<h1>" . esc_html($title) . "</h1>";
+    echo "<div class='card-content'>" . wp_kses_post($content) . "</div>";
+    echo "</div>";
+    get_footer();
     exit;
 });
 
