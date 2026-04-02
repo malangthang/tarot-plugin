@@ -15,10 +15,16 @@ function tarot_import_page() {
 
     check_admin_referer('tarot_import');
 
-    tarot_import_from_json();
-    
+    $result = tarot_import_from_json();
+    if (is_wp_error($result)) {
+        echo '<div class="wrap">';
+        echo '<div class="error"><p><strong>Import failed:</strong> ' . esc_html($result->get_error_message()) . '</p></div>';
+        echo '</div>';
+        return;
+    }
+
     echo '<div class="wrap">';
-    echo '<div class="updated"><p><strong>Import completed!</strong> <a href="?page=tarot-cards">View all cards</a></p></div>';
+    echo '<div class="updated"><p><strong>Import completed!</strong> ' . intval($result) . ' cards imported/updated. <a href="?page=tarot-cards">View all cards</a></p></div>';
     echo '</div>';
 }
 
@@ -45,6 +51,11 @@ function tarot_import_from_json() {
 
     $imported = 0;
 
+    $table_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
+    if ($table_exists !== $table) {
+        return new WP_Error('no_table', 'Database table "'.esc_html($table).'" does not exist. Activate plugin or re-install first.');
+    }
+
     foreach ($data as $card) {
         // Fallback for older data schema
         $health_upright = $card['health_upright'] ?? $card['spiritual_upright'] ?? '';
@@ -58,8 +69,7 @@ function tarot_import_from_json() {
 
         if ($existing) {
             // Update existing
-            $wpdb->update($table, [
-                'name' => $card['name'],
+            $wpdb->update($table, [                'name' => $card['name'],
                 'arcana' => $card['arcana'] ?? '',
                 'number' => $card['number'] ?? 0,
                 'deck' => $card['deck'] ?? '',
@@ -85,6 +95,10 @@ function tarot_import_from_json() {
                 'advice_reversed' => $card['advice_reversed'] ?? '',
                 'advice_message' => $card['advice_message'] ?? ''
             ], ['slug' => $card['slug']]);
+            if (!empty($wpdb->last_error)) {
+                return new WP_Error('db_error', 'Update failed: '.esc_html($wpdb->last_error).
+                    '. Query: '.esc_html($wpdb->last_query));
+            }
         } else {
             // Insert new
             $wpdb->insert($table, [
@@ -115,6 +129,10 @@ function tarot_import_from_json() {
                 'advice_reversed' => $card['advice_reversed'] ?? '',
                 'advice_message' => $card['advice_message'] ?? ''
             ]);
+            if (!empty($wpdb->last_error)) {
+                return new WP_Error('db_error', 'Insert failed: '.esc_html($wpdb->last_error).
+                    '. Query: '.esc_html($wpdb->last_query));
+            }
         }
 
         $imported++;

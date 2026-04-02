@@ -8,6 +8,8 @@ if (!defined('ABSPATH')) exit;
 define('TAROT_PATH', plugin_dir_path(__FILE__));
 define('TAROT_URL', plugin_dir_url(__FILE__));
 
+register_activation_hook(__FILE__, 'tarot_install');
+
 require_once TAROT_PATH . 'includes/install.php';
 require_once TAROT_PATH . 'includes/import.php';
 require_once TAROT_PATH . 'includes/api.php';
@@ -23,3 +25,4 @@ add_action('wp_enqueue_scripts', function () {
         'ajax_url' => admin_url('admin-ajax.php')
     ]);
 });
+
