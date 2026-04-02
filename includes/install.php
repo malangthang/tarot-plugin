@@ -53,4 +53,7 @@ function tarot_install() {
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
+
+    // Flush rewrite rules to support /tarot/{slug} endpoints
+    flush_rewrite_rules();
 }

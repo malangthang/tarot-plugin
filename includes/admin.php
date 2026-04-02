@@ -20,15 +20,17 @@ function tarot_admin_page() {
     $cards = $wpdb->get_results("SELECT * FROM $table ORDER BY number ASC");
 
     echo '<div class="wrap"><h1>Tarot Cards</h1>';
-    echo '<a href="?page=tarot-add" class="button button-primary">Add New Card</a>';
-    echo '<table class="widefat" style="margin-top: 20px;"><thead><tr><th>Name</th><th>Arcana</th><th>#</th><th>Custom</th><th>Actions</th></tr></thead><tbody>';
+    echo '<a href="?page=tarot-add" class="page-title-action">Add New</a>';
+    echo '<table class="widefat fixed striped" style="margin-top: 20px;"><thead><tr><th>Name</th><th>Arcana</th><th>#</th><th>View</th><th>Custom</th><th>Actions</th></tr></thead><tbody>';
 
     foreach ($cards as $c) {
         $delete_url = wp_nonce_url("?page=tarot-cards&action=delete&id={$c->id}", 'tarot_delete');
+        $view_url = esc_url(home_url("/tarot/{$c->slug}"));
         echo "<tr>
             <td><strong>{$c->name}</strong></td>
             <td>{$c->arcana}</td>
             <td>{$c->number}</td>
+            <td><a href='{$view_url}' target='_blank'>View</a></td>
             <td>" . ($c->custom_content ? '✅' : '❌') . "</td>
             <td>
                 <a href='?page=tarot-edit&id={$c->id}' class='button button-small'>Edit</a>

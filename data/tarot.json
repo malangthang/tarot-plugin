@@ -13,63 +13,77 @@
 
   "meaning": {
     "upright": {
-      "general": "New beginnings, freedom, adventure, and stepping into the unknown.",
-      "keywords": ["new beginnings", "freedom", "adventure"],
+      "general": "The Fool đại diện cho sự khởi đầu mới, sự tò mò và sẵn sàng bước vào điều chưa biết với niềm tin.",
+
+      "keywords": ["khởi đầu mới", "tự do", "ngây thơ", "phiêu lưu", "tự phát"],
 
       "contexts": {
-        "love": "Fresh romance, spontaneity, and open-hearted connection.",
-        "career": "New opportunities, taking risks, starting a new path.",
-        "finance": "A fresh financial start, but avoid careless spending.",
-        "health": "Trust your body and follow your intuition."
+        "love": "Trong tình yêu, The Fool cho thấy một khởi đầu mới hoặc mối quan hệ đến bất ngờ. Khuyến khích mở lòng và đừng suy nghĩ quá nhiều.",
+
+        "career": "Trong công việc, lá bài này biểu thị cơ hội mới, dám thử điều mới và đi theo hướng khác biệt.",
+
+        "finance": "Về tài chính, có thể là một khởi đầu mới nhưng cần tránh chi tiêu bốc đồng.",
+
+        "health": "Về sức khỏe, hãy tin vào cơ thể và thử những cách tiếp cận mới, nhưng đừng bỏ qua dấu hiệu quan trọng."
       },
 
-      "advice": "Take a leap of faith and embrace the unknown.",
-      "message": "Start before you're ready.",
+      "advice": "Hãy dám bước đi, tin vào hành trình và đón nhận những cơ hội mới.",
+
+      "message": "Mọi hành trình đều bắt đầu từ bước đầu tiên.",
+
       "yes_no": true
     },
 
     "reversed": {
-      "general": "Carelessness, hesitation, fear of the unknown, or reckless behavior.",
-      "keywords": ["reckless", "naive", "fear"],
+      "general": "Khi đảo ngược, The Fool thể hiện sự do dự, quyết định thiếu suy nghĩ hoặc hành động liều lĩnh.",
+
+      "keywords": ["liều lĩnh", "ngây thơ", "do dự", "rủi ro", "quyết định sai"],
 
       "contexts": {
-        "love": "Immaturity, lack of commitment, or unstable emotions.",
-        "career": "Poor planning, risky decisions, lack of direction.",
-        "finance": "Careless spending or financial instability.",
-        "health": "Ignoring warning signs or disconnect from intuition."
+        "love": "Trong tình yêu, có thể là sự thiếu trưởng thành, không nghiêm túc hoặc mối quan hệ không ổn định.",
+
+        "career": "Trong công việc, cảnh báo về quyết định vội vàng, thiếu kế hoạch hoặc hướng đi không rõ ràng.",
+
+        "finance": "Về tài chính, cho thấy chi tiêu thiếu kiểm soát hoặc quyết định rủi ro.",
+
+        "health": "Về sức khỏe, có thể bạn đang bỏ qua những dấu hiệu cảnh báo quan trọng."
       },
 
-      "advice": "Pause and think carefully before taking action.",
-      "message": "Slow down and reconsider your choices.",
+      "advice": "Hãy chậm lại, suy nghĩ kỹ trước khi hành động và tránh rủi ro không cần thiết.",
+
+      "message": "Không phải bước nhảy nào cũng đúng lúc.",
+
       "yes_no": false
     }
   },
 
   "content": {
-    "intro": "The Fool đại diện cho sự khởi đầu mới, tự do và hành trình khám phá bản thân.",
+    "intro": "The Fool là lá bài đại diện cho sự khởi đầu mới, tinh thần tự do và hành trình khám phá bản thân.",
 
-    "body": "<p>The Fool là lá bài số 0 trong Major Arcana, tượng trưng cho hành trình mới...</p>",
+    "body": "<p>The Fool là lá bài số 0 trong bộ Ẩn chính, tượng trưng cho hành trình mới. Nhân vật trong lá bài bước đi với niềm tin và sự vô tư, không sợ hãi phía trước.</p><p>Lá bài khuyến khích bạn dám bước ra khỏi vùng an toàn, nhưng cũng nhắc cần giữ sự tỉnh táo để tránh quyết định bốc đồng.</p>",
 
     "sections": {
-      "love": "<p>Trong tình yêu, The Fool cho thấy sự khởi đầu đầy cảm xúc...</p>",
-      "career": "<p>Trong sự nghiệp, lá bài này báo hiệu cơ hội mới...</p>",
-      "spiritual": "<p>Về mặt tâm linh, The Fool đại diện cho hành trình thức tỉnh...</p>"
+      "love": "<p>Trong tình yêu, The Fool mang đến năng lượng mới mẻ, có thể là một mối quan hệ mới hoặc giai đoạn đầy cảm xúc.</p>",
+
+      "career": "<p>Trong công việc, đây là dấu hiệu của cơ hội mới hoặc hướng đi khác. Bạn cần sự dũng cảm để quyết định.</p>",
+
+      "spiritual": "<p>Về tâm linh, The Fool đại diện cho hành trình khám phá bản thân và niềm tin vào cuộc sống.</p>"
     },
 
     "seo": {
-      "title": "The Fool Tarot Meaning – Love, Career, Advice",
-      "description": "Khám phá ý nghĩa lá The Fool trong tarot về tình yêu, công việc và cuộc sống."
+      "title": "Ý nghĩa lá The Fool – Tình yêu, Công việc, Lời khuyên",
+      "description": "Khám phá ý nghĩa lá The Fool trong tarot về tình yêu, sự nghiệp và định hướng cuộc sống."
     }
   },
 
   "extra": {
     "symbolism": {
-      "cliff": "Risk and the unknown",
-      "dog": "Instinct and protection",
-      "white_rose": "Purity and innocence"
+      "cliff": "Bờ vực của điều chưa biết, sự mạo hiểm",
+      "dog": "Bản năng, sự cảnh báo và bảo vệ",
+      "white_rose": "Sự thuần khiết và khởi đầu mới"
     },
 
-    "timing": "spring",
+    "timing": "mùa xuân",
     "numerology": 0
   }
 }
