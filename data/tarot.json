@@ -1,53 +1,75 @@
 {
-  "name": "The Fool",
   "slug": "the-fool",
-  "arcana": "major",
-  "number": 0,
-  "deck": "rider-waite",
-  "image": "the-fool.jpg",
 
-  "description": "New beginnings, freedom, and stepping into the unknown.",
-
-  "keywords_upright": [
-    "new beginnings",
-    "freedom",
-    "adventure"
-  ],
-  "keywords_reversed": [
-    "recklessness",
-    "fear",
-    "naive"
-  ],
-
-  "meaning_upright": "A new journey is beginning. Take a leap of faith.",
-  "meaning_reversed": "You may be acting without thinking or avoiding change.",
-
-  "love_upright": "New love or fresh start.",
-  "love_reversed": "Immaturity or fear of commitment.",
-
-  "career_upright": "New opportunity or direction.",
-  "career_reversed": "Risky or poor decisions.",
-
-  "finance_upright": "New financial start.",
-  "finance_reversed": "Careless spending.",
-
-  "health_upright": "Trust your path.",
-  "health_reversed": "Disconnected from intuition.",
-
-  "advice_upright": "Take the leap.",
-  "advice_reversed": "Think before acting.",
-
-  "advice_message": "Start before you're ready.",
-
-  "yes_no_upright": "Yes",
-  "yes_no_reversed": "No",
-
-  "symbolism": {
-    "cliff": "Unknown",
-    "dog": "Instinct",
-    "sun": "Clarity"
+  "meta": {
+    "name": "The Fool",
+    "arcana": "major",
+    "number": 0,
+    "deck": "rider-waite",
+    "image": "the-fool.jpg",
+    "element": "air",
+    "planet": "uranus"
   },
 
-  "element": "Air",
-  "planet": "Uranus"
+  "meaning": {
+    "upright": {
+      "general": "New beginnings, freedom, adventure, and stepping into the unknown.",
+      "keywords": ["new beginnings", "freedom", "adventure"],
+
+      "contexts": {
+        "love": "Fresh romance, spontaneity, and open-hearted connection.",
+        "career": "New opportunities, taking risks, starting a new path.",
+        "finance": "A fresh financial start, but avoid careless spending.",
+        "health": "Trust your body and follow your intuition."
+      },
+
+      "advice": "Take a leap of faith and embrace the unknown.",
+      "message": "Start before you're ready.",
+      "yes_no": true
+    },
+
+    "reversed": {
+      "general": "Carelessness, hesitation, fear of the unknown, or reckless behavior.",
+      "keywords": ["reckless", "naive", "fear"],
+
+      "contexts": {
+        "love": "Immaturity, lack of commitment, or unstable emotions.",
+        "career": "Poor planning, risky decisions, lack of direction.",
+        "finance": "Careless spending or financial instability.",
+        "health": "Ignoring warning signs or disconnect from intuition."
+      },
+
+      "advice": "Pause and think carefully before taking action.",
+      "message": "Slow down and reconsider your choices.",
+      "yes_no": false
+    }
+  },
+
+  "content": {
+    "intro": "The Fool đại diện cho sự khởi đầu mới, tự do và hành trình khám phá bản thân.",
+
+    "body": "<p>The Fool là lá bài số 0 trong Major Arcana, tượng trưng cho hành trình mới...</p>",
+
+    "sections": {
+      "love": "<p>Trong tình yêu, The Fool cho thấy sự khởi đầu đầy cảm xúc...</p>",
+      "career": "<p>Trong sự nghiệp, lá bài này báo hiệu cơ hội mới...</p>",
+      "spiritual": "<p>Về mặt tâm linh, The Fool đại diện cho hành trình thức tỉnh...</p>"
+    },
+
+    "seo": {
+      "title": "The Fool Tarot Meaning – Love, Career, Advice",
+      "description": "Khám phá ý nghĩa lá The Fool trong tarot về tình yêu, công việc và cuộc sống."
+    }
+  },
+
+  "extra": {
+    "symbolism": {
+      "cliff": "Risk and the unknown",
+      "dog": "Instinct and protection",
+      "white_rose": "Purity and innocence"
+    },
+
+    "timing": "spring",
+    "numerology": 0
+  }
 }

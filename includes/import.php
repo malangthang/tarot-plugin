@@ -41,7 +41,7 @@ function tarot_import_from_json() {
     $json_content = file_get_contents($json_file);
     $data = json_decode($json_content, true);
 
-    if (is_array($data) && isset($data['name'])) {
+    if (is_array($data) && isset($data['slug'])) {
         $data = [$data]; // If single object, wrap in array
     }
 
@@ -57,44 +57,77 @@ function tarot_import_from_json() {
     }
 
     foreach ($data as $card) {
-        // Fallback for older data schema
-        $health_upright = $card['health_upright'] ?? $card['spiritual_upright'] ?? '';
-        $health_reversed = $card['health_reversed'] ?? $card['spiritual_reversed'] ?? '';
+        // Map new JSON structure to database fields
+        $name = $card['meta']['name'] ?? '';
+        $slug = $card['slug'] ?? '';
+        $arcana = $card['meta']['arcana'] ?? '';
+        $number = $card['meta']['number'] ?? 0;
+        $deck = $card['meta']['deck'] ?? '';
+        $image = $card['meta']['image'] ?? '';
+        $description = $card['content']['intro'] ?? '';
+
+        $meaning_upright = $card['meaning']['upright']['general'] ?? '';
+        $meaning_reversed = $card['meaning']['reversed']['general'] ?? '';
+
+        $love_upright = $card['meaning']['upright']['contexts']['love'] ?? '';
+        $love_reversed = $card['meaning']['reversed']['contexts']['love'] ?? '';
+        $career_upright = $card['meaning']['upright']['contexts']['career'] ?? '';
+        $career_reversed = $card['meaning']['reversed']['contexts']['career'] ?? '';
+        $finance_upright = $card['meaning']['upright']['contexts']['finance'] ?? '';
+        $finance_reversed = $card['meaning']['reversed']['contexts']['finance'] ?? '';
+        $health_upright = $card['meaning']['upright']['contexts']['health'] ?? '';
+        $health_reversed = $card['meaning']['reversed']['contexts']['health'] ?? '';
+
+        $keywords_upright = is_array($card['meaning']['upright']['keywords'] ?? null) ? implode(', ', $card['meaning']['upright']['keywords']) : '';
+        $keywords_reversed = is_array($card['meaning']['reversed']['keywords'] ?? null) ? implode(', ', $card['meaning']['reversed']['keywords']) : '';
+
+        $yes_no_upright = $card['meaning']['upright']['yes_no'] ? 'Yes' : 'No';
+        $yes_no_reversed = $card['meaning']['reversed']['yes_no'] ? 'Yes' : 'No';
+
+        $advice_upright = $card['meaning']['upright']['advice'] ?? '';
+        $advice_reversed = $card['meaning']['reversed']['advice'] ?? '';
+        $advice_message = $card['meaning']['upright']['message'] ?? '';
+
+        $custom_title = $card['content']['seo']['title'] ?? '';
+        $custom_content = $card['content']['body'] ?? '';
+        $custom_excerpt = $card['content']['seo']['description'] ?? '';
 
         // Check if card already exists
         $existing = $wpdb->get_row($wpdb->prepare(
             "SELECT id FROM $table WHERE slug=%s",
-            $card['slug']
+            $slug
         ));
 
         if ($existing) {
             // Update existing
-            $wpdb->update($table, [                'name' => $card['name'],
-                'arcana' => $card['arcana'] ?? '',
-                'number' => $card['number'] ?? 0,
-                'deck' => $card['deck'] ?? '',
-                'image' => $card['image'] ?? '',
-                'description' => $card['description'] ?? '',
-                'meaning_upright' => $card['meaning_upright'] ?? '',
-                'meaning_reversed' => $card['meaning_reversed'] ?? '',
-                'love_upright' => $card['love_upright'] ?? '',
-                'love_reversed' => $card['love_reversed'] ?? '',
-                'career_upright' => $card['career_upright'] ?? '',
-                'career_reversed' => $card['career_reversed'] ?? '',
-                'finance_upright' => $card['finance_upright'] ?? '',
-                'finance_reversed' => $card['finance_reversed'] ?? '',
+            $wpdb->update($table, [
+                'name' => $name,
+                'arcana' => $arcana,
+                'number' => $number,
+                'deck' => $deck,
+                'image' => $image,
+                'description' => $description,
+                'meaning_upright' => $meaning_upright,
+                'meaning_reversed' => $meaning_reversed,
+                'love_upright' => $love_upright,
+                'love_reversed' => $love_reversed,
+                'career_upright' => $career_upright,
+                'career_reversed' => $career_reversed,
+                'finance_upright' => $finance_upright,
+                'finance_reversed' => $finance_reversed,
                 'health_upright' => $health_upright,
                 'health_reversed' => $health_reversed,
-                'spiritual_upright' => $card['spiritual_upright'] ?? $health_upright,
-                'spiritual_reversed' => $card['spiritual_reversed'] ?? $health_reversed,
-                'keywords_upright' => is_array($card['keywords_upright']) ? implode(', ', $card['keywords_upright']) : '',
-                'keywords_reversed' => is_array($card['keywords_reversed']) ? implode(', ', $card['keywords_reversed']) : '',
-                'yes_no_upright' => $card['yes_no_upright'] ?? '',
-                'yes_no_reversed' => $card['yes_no_reversed'] ?? '',
-                'advice_upright' => $card['advice_upright'] ?? '',
-                'advice_reversed' => $card['advice_reversed'] ?? '',
-                'advice_message' => $card['advice_message'] ?? ''
-            ], ['slug' => $card['slug']]);
+                'keywords_upright' => $keywords_upright,
+                'keywords_reversed' => $keywords_reversed,
+                'yes_no_upright' => $yes_no_upright,
+                'yes_no_reversed' => $yes_no_reversed,
+                'advice_upright' => $advice_upright,
+                'advice_reversed' => $advice_reversed,
+                'advice_message' => $advice_message,
+                'custom_title' => $custom_title,
+                'custom_content' => $custom_content,
+                'custom_excerpt' => $custom_excerpt
+            ], ['slug' => $slug]);
             if (!empty($wpdb->last_error)) {
                 return new WP_Error('db_error', 'Update failed: '.esc_html($wpdb->last_error).
                     '. Query: '.esc_html($wpdb->last_query));
@@ -102,32 +135,33 @@ function tarot_import_from_json() {
         } else {
             // Insert new
             $wpdb->insert($table, [
-                'name' => $card['name'],
-                'slug' => $card['slug'],
-                'arcana' => $card['arcana'] ?? '',
-                'number' => $card['number'] ?? 0,
-                'deck' => $card['deck'] ?? '',
-                'image' => $card['image'] ?? '',
-                'description' => $card['description'] ?? '',
-                'meaning_upright' => $card['meaning_upright'] ?? '',
-                'meaning_reversed' => $card['meaning_reversed'] ?? '',
-                'love_upright' => $card['love_upright'] ?? '',
-                'love_reversed' => $card['love_reversed'] ?? '',
-                'career_upright' => $card['career_upright'] ?? '',
-                'career_reversed' => $card['career_reversed'] ?? '',
-                'finance_upright' => $card['finance_upright'] ?? '',
-                'finance_reversed' => $card['finance_reversed'] ?? '',
+                'name' => $name,
+                'slug' => $slug,
+                'arcana' => $arcana,
+                'number' => $number,
+                'deck' => $deck,
+                'image' => $image,
+                'description' => $description,
+                'meaning_upright' => $meaning_upright,
+                'meaning_reversed' => $meaning_reversed,
+                'love_upright' => $love_upright,
+                'love_reversed' => $love_reversed,
+                'career_upright' => $career_upright,
+                'career_reversed' => $career_reversed,
+                'finance_upright' => $finance_upright,
+                'finance_reversed' => $finance_reversed,
                 'health_upright' => $health_upright,
                 'health_reversed' => $health_reversed,
-                'spiritual_upright' => $card['spiritual_upright'] ?? $health_upright,
-                'spiritual_reversed' => $card['spiritual_reversed'] ?? $health_reversed,
-                'keywords_upright' => is_array($card['keywords_upright']) ? implode(', ', $card['keywords_upright']) : '',
-                'keywords_reversed' => is_array($card['keywords_reversed']) ? implode(', ', $card['keywords_reversed']) : '',
-                'yes_no_upright' => $card['yes_no_upright'] ?? '',
-                'yes_no_reversed' => $card['yes_no_reversed'] ?? '',
-                'advice_upright' => $card['advice_upright'] ?? '',
-                'advice_reversed' => $card['advice_reversed'] ?? '',
-                'advice_message' => $card['advice_message'] ?? ''
+                'keywords_upright' => $keywords_upright,
+                'keywords_reversed' => $keywords_reversed,
+                'yes_no_upright' => $yes_no_upright,
+                'yes_no_reversed' => $yes_no_reversed,
+                'advice_upright' => $advice_upright,
+                'advice_reversed' => $advice_reversed,
+                'advice_message' => $advice_message,
+                'custom_title' => $custom_title,
+                'custom_content' => $custom_content,
+                'custom_excerpt' => $custom_excerpt
             ]);
             if (!empty($wpdb->last_error)) {
                 return new WP_Error('db_error', 'Insert failed: '.esc_html($wpdb->last_error).

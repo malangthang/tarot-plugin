@@ -62,8 +62,21 @@ function tarot_add_page() {
             'description' => sanitize_textarea_field($_POST['description']),
             'meaning_upright' => sanitize_textarea_field($_POST['meaning_upright']),
             'meaning_reversed' => sanitize_textarea_field($_POST['meaning_reversed']),
+            'love_upright' => sanitize_textarea_field($_POST['love_upright']),
+            'love_reversed' => sanitize_textarea_field($_POST['love_reversed']),
+            'career_upright' => sanitize_textarea_field($_POST['career_upright']),
+            'career_reversed' => sanitize_textarea_field($_POST['career_reversed']),
+            'finance_upright' => sanitize_textarea_field($_POST['finance_upright']),
+            'finance_reversed' => sanitize_textarea_field($_POST['finance_reversed']),
             'health_upright' => sanitize_textarea_field($_POST['health_upright']),
             'health_reversed' => sanitize_textarea_field($_POST['health_reversed']),
+            'keywords_upright' => sanitize_text_field($_POST['keywords_upright']),
+            'keywords_reversed' => sanitize_text_field($_POST['keywords_reversed']),
+            'yes_no_upright' => sanitize_text_field($_POST['yes_no_upright']),
+            'yes_no_reversed' => sanitize_text_field($_POST['yes_no_reversed']),
+            'advice_upright' => sanitize_textarea_field($_POST['advice_upright']),
+            'advice_reversed' => sanitize_textarea_field($_POST['advice_reversed']),
+            'advice_message' => sanitize_textarea_field($_POST['advice_message']),
             'custom_title' => sanitize_text_field($_POST['custom_title']),
             'custom_content' => wp_kses_post($_POST['custom_content']),
             'custom_excerpt' => sanitize_textarea_field($_POST['custom_excerpt'])
@@ -79,6 +92,7 @@ function tarot_add_page() {
         <form method="post" style="max-width: 800px;">
             <?php wp_nonce_field('tarot_add'); ?>
             
+            <h2 style="border-bottom: 1px solid #ccc; padding-bottom: 10px;">Meta Information</h2>
             <table class="form-table">
                 <tr>
                     <th><label for="name">Name:</label></th>
@@ -113,17 +127,45 @@ function tarot_add_page() {
                     <th><label for="custom_image">Custom Image:</label></th>
                     <td><input type="text" id="custom_image" name="custom_image" placeholder="custom-image.jpg" style="width: 100%;"></td>
                 </tr>
+            </table>
+            
+            <h2 style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-top: 30px;">Meaning</h2>
+            <table class="form-table">
                 <tr>
                     <th><label for="description">Description:</label></th>
                     <td><textarea id="description" name="description" rows="2" style="width: 100%;"></textarea></td>
                 </tr>
                 <tr>
-                    <th><label for="meaning_upright">Meaning Upright:</label></th>
+                    <th><label for="meaning_upright">General Upright:</label></th>
                     <td><textarea id="meaning_upright" name="meaning_upright" rows="3" style="width: 100%;"></textarea></td>
                 </tr>
                 <tr>
-                    <th><label for="meaning_reversed">Meaning Reversed:</label></th>
+                    <th><label for="meaning_reversed">General Reversed:</label></th>
                     <td><textarea id="meaning_reversed" name="meaning_reversed" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="love_upright">Love Upright:</label></th>
+                    <td><textarea id="love_upright" name="love_upright" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="love_reversed">Love Reversed:</label></th>
+                    <td><textarea id="love_reversed" name="love_reversed" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="career_upright">Career Upright:</label></th>
+                    <td><textarea id="career_upright" name="career_upright" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="career_reversed">Career Reversed:</label></th>
+                    <td><textarea id="career_reversed" name="career_reversed" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="finance_upright">Finance Upright:</label></th>
+                    <td><textarea id="finance_upright" name="finance_upright" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="finance_reversed">Finance Reversed:</label></th>
+                    <td><textarea id="finance_reversed" name="finance_reversed" rows="3" style="width: 100%;"></textarea></td>
                 </tr>
                 <tr>
                     <th><label for="health_upright">Health Upright:</label></th>
@@ -133,6 +175,38 @@ function tarot_add_page() {
                     <th><label for="health_reversed">Health Reversed:</label></th>
                     <td><textarea id="health_reversed" name="health_reversed" rows="3" style="width: 100%;"></textarea></td>
                 </tr>
+                <tr>
+                    <th><label for="keywords_upright">Keywords Upright:</label></th>
+                    <td><input type="text" id="keywords_upright" name="keywords_upright" placeholder="new beginnings, freedom, adventure" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="keywords_reversed">Keywords Reversed:</label></th>
+                    <td><input type="text" id="keywords_reversed" name="keywords_reversed" placeholder="recklessness, fear, naive" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="yes_no_upright">Yes/No Upright:</label></th>
+                    <td><input type="text" id="yes_no_upright" name="yes_no_upright" placeholder="Yes" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="yes_no_reversed">Yes/No Reversed:</label></th>
+                    <td><input type="text" id="yes_no_reversed" name="yes_no_reversed" placeholder="No" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="advice_upright">Advice Upright:</label></th>
+                    <td><textarea id="advice_upright" name="advice_upright" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="advice_reversed">Advice Reversed:</label></th>
+                    <td><textarea id="advice_reversed" name="advice_reversed" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="advice_message">Advice Message:</label></th>
+                    <td><textarea id="advice_message" name="advice_message" rows="3" style="width: 100%;"></textarea></td>
+                </tr>
+            </table>
+            
+            <h2 style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-top: 30px;">Content</h2>
+            <table class="form-table">
                 <tr>
                     <th><label for="custom_title">Custom Title:</label></th>
                     <td><input type="text" id="custom_title" name="custom_title" style="width: 100%;"></td>
@@ -169,10 +243,34 @@ function tarot_edit() {
         check_admin_referer('tarot_edit');
 
         $wpdb->update($table, [
+            'name' => sanitize_text_field($_POST['name']),
+            'slug' => sanitize_title($_POST['slug']),
+            'arcana' => sanitize_text_field($_POST['arcana']),
+            'number' => intval($_POST['number']),
+            'deck' => sanitize_text_field($_POST['deck']),
+            'image' => sanitize_text_field($_POST['image']),
+            'custom_image' => sanitize_text_field($_POST['custom_image']),
+            'description' => sanitize_textarea_field($_POST['description']),
+            'meaning_upright' => sanitize_textarea_field($_POST['meaning_upright']),
+            'meaning_reversed' => sanitize_textarea_field($_POST['meaning_reversed']),
+            'love_upright' => sanitize_textarea_field($_POST['love_upright']),
+            'love_reversed' => sanitize_textarea_field($_POST['love_reversed']),
+            'career_upright' => sanitize_textarea_field($_POST['career_upright']),
+            'career_reversed' => sanitize_textarea_field($_POST['career_reversed']),
+            'finance_upright' => sanitize_textarea_field($_POST['finance_upright']),
+            'finance_reversed' => sanitize_textarea_field($_POST['finance_reversed']),
+            'health_upright' => sanitize_textarea_field($_POST['health_upright']),
+            'health_reversed' => sanitize_textarea_field($_POST['health_reversed']),
+            'keywords_upright' => sanitize_text_field($_POST['keywords_upright']),
+            'keywords_reversed' => sanitize_text_field($_POST['keywords_reversed']),
+            'yes_no_upright' => sanitize_text_field($_POST['yes_no_upright']),
+            'yes_no_reversed' => sanitize_text_field($_POST['yes_no_reversed']),
+            'advice_upright' => sanitize_textarea_field($_POST['advice_upright']),
+            'advice_reversed' => sanitize_textarea_field($_POST['advice_reversed']),
+            'advice_message' => sanitize_textarea_field($_POST['advice_message']),
             'custom_title' => sanitize_text_field($_POST['custom_title']),
             'custom_content' => wp_kses_post($_POST['custom_content']),
-            'custom_excerpt' => sanitize_textarea_field($_POST['custom_excerpt']),
-            'custom_image' => sanitize_text_field($_POST['custom_image'])
+            'custom_excerpt' => sanitize_textarea_field($_POST['custom_excerpt'])
         ], ['id' => $id]);
 
         echo '<div class="updated"><p>Card saved.</p></div>';
@@ -190,38 +288,116 @@ function tarot_edit() {
 
             <table class="form-table">
                 <tr>
-                    <th colspan="2"><h2>Card Info (Read-only)</h2></th>
+                    <th><label for="name">Name:</label></th>
+                    <td><input type="text" id="name" name="name" value="<?php echo esc_attr($card->name); ?>" required style="width: 100%;"></td>
                 </tr>
                 <tr>
-                    <th>Name:</th>
-                    <td><?php echo esc_html($card->name); ?></td>
-                </tr>                <tr>
+                    <th><label for="slug">Slug:</label></th>
+                    <td><input type="text" id="slug" name="slug" value="<?php echo esc_attr($card->slug); ?>" required style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="arcana">Arcana:</label></th>
+                    <td>
+                        <select id="arcana" name="arcana">
+                            <option value="major" <?php selected($card->arcana, 'major'); ?>>Major</option>
+                            <option value="minor" <?php selected($card->arcana, 'minor'); ?>>Minor</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="number">Number:</label></th>
+                    <td><input type="number" id="number" name="number" value="<?php echo esc_attr($card->number); ?>" min="0" style="width: 100px;"></td>
+                </tr>
+                <tr>
+                    <th><label for="deck">Deck:</label></th>
+                    <td><input type="text" id="deck" name="deck" value="<?php echo esc_attr($card->deck); ?>" placeholder="rider-waite" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="image">Image:</label></th>
+                    <td><input type="text" id="image" name="image" value="<?php echo esc_attr($card->image); ?>" placeholder="image.jpg" style="width: 100%;"></td>
+                </tr>
+                <tr>
                     <th><label for="custom_image">Custom Image:</label></th>
-                    <td><input type="text" id="custom_image" name="custom_image" value="<?php echo esc_attr($card->custom_image); ?>" style="width: 100%;"></td>
-                </tr>                <tr>
-                    <th>Slug:</th>
-                    <td><?php echo esc_html($card->slug); ?></td>
+                    <td><input type="text" id="custom_image" name="custom_image" value="<?php echo esc_attr($card->custom_image); ?>" placeholder="custom-image.jpg" style="width: 100%;"></td>
+                </tr>
+            </table>
+            
+            <h2 style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-top: 30px;">Meaning</h2>
+            <table class="form-table">
+                <tr>
+                    <th><label for="description">Description:</label></th>
+                    <td><textarea id="description" name="description" rows="2" style="width: 100%;"><?php echo esc_textarea($card->description); ?></textarea></td>
                 </tr>
                 <tr>
-                    <th>Arcana:</th>
-                    <td><?php echo esc_html($card->arcana); ?></td>
+                    <th><label for="meaning_upright">General Upright:</label></th>
+                    <td><textarea id="meaning_upright" name="meaning_upright" rows="3" style="width: 100%;"><?php echo esc_textarea($card->meaning_upright); ?></textarea></td>
                 </tr>
                 <tr>
-                    <th>Number:</th>
-                    <td><?php echo esc_html($card->number); ?></td>
+                    <th><label for="meaning_reversed">General Reversed:</label></th>
+                    <td><textarea id="meaning_reversed" name="meaning_reversed" rows="3" style="width: 100%;"><?php echo esc_textarea($card->meaning_reversed); ?></textarea></td>
                 </tr>
                 <tr>
-                    <th>Meaning (Upright):</th>
-                    <td><pre><?php echo esc_html($card->meaning_upright); ?></pre></td>
+                    <th><label for="love_upright">Love Upright:</label></th>
+                    <td><textarea id="love_upright" name="love_upright" rows="3" style="width: 100%;"><?php echo esc_textarea($card->love_upright); ?></textarea></td>
                 </tr>
                 <tr>
-                    <th>Meaning (Reversed):</th>
-                    <td><pre><?php echo esc_html($card->meaning_reversed); ?></pre></td>
+                    <th><label for="love_reversed">Love Reversed:</label></th>
+                    <td><textarea id="love_reversed" name="love_reversed" rows="3" style="width: 100%;"><?php echo esc_textarea($card->love_reversed); ?></textarea></td>
                 </tr>
-
                 <tr>
-                    <th colspan="2"><h2>Custom Content</h2></th>
+                    <th><label for="career_upright">Career Upright:</label></th>
+                    <td><textarea id="career_upright" name="career_upright" rows="3" style="width: 100%;"><?php echo esc_textarea($card->career_upright); ?></textarea></td>
                 </tr>
+                <tr>
+                    <th><label for="career_reversed">Career Reversed:</label></th>
+                    <td><textarea id="career_reversed" name="career_reversed" rows="3" style="width: 100%;"><?php echo esc_textarea($card->career_reversed); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="finance_upright">Finance Upright:</label></th>
+                    <td><textarea id="finance_upright" name="finance_upright" rows="3" style="width: 100%;"><?php echo esc_textarea($card->finance_upright); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="finance_reversed">Finance Reversed:</label></th>
+                    <td><textarea id="finance_reversed" name="finance_reversed" rows="3" style="width: 100%;"><?php echo esc_textarea($card->finance_reversed); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="health_upright">Health Upright:</label></th>
+                    <td><textarea id="health_upright" name="health_upright" rows="3" style="width: 100%;"><?php echo esc_textarea($card->health_upright); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="health_reversed">Health Reversed:</label></th>
+                    <td><textarea id="health_reversed" name="health_reversed" rows="3" style="width: 100%;"><?php echo esc_textarea($card->health_reversed); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="keywords_upright">Keywords Upright:</label></th>
+                    <td><input type="text" id="keywords_upright" name="keywords_upright" value="<?php echo esc_attr($card->keywords_upright); ?>" placeholder="new beginnings, freedom, adventure" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="keywords_reversed">Keywords Reversed:</label></th>
+                    <td><input type="text" id="keywords_reversed" name="keywords_reversed" value="<?php echo esc_attr($card->keywords_reversed); ?>" placeholder="recklessness, fear, naive" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="yes_no_upright">Yes/No Upright:</label></th>
+                    <td><input type="text" id="yes_no_upright" name="yes_no_upright" value="<?php echo esc_attr($card->yes_no_upright); ?>" placeholder="Yes" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="yes_no_reversed">Yes/No Reversed:</label></th>
+                    <td><input type="text" id="yes_no_reversed" name="yes_no_reversed" value="<?php echo esc_attr($card->yes_no_reversed); ?>" placeholder="No" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <th><label for="advice_upright">Advice Upright:</label></th>
+                    <td><textarea id="advice_upright" name="advice_upright" rows="3" style="width: 100%;"><?php echo esc_textarea($card->advice_upright); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="advice_reversed">Advice Reversed:</label></th>
+                    <td><textarea id="advice_reversed" name="advice_reversed" rows="3" style="width: 100%;"><?php echo esc_textarea($card->advice_reversed); ?></textarea></td>
+                </tr>
+                <tr>
+                    <th><label for="advice_message">Advice Message:</label></th>
+                    <td><textarea id="advice_message" name="advice_message" rows="3" style="width: 100%;"><?php echo esc_textarea($card->advice_message); ?></textarea></td>
+                </tr>
+            <h2 style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-top: 30px;">Content</h2>
+            <table class="form-table">
                 <tr>
                     <th><label for="custom_title">Custom Title:</label></th>
                     <td><input type="text" id="custom_title" name="custom_title" value="<?php echo esc_attr($card->custom_title); ?>" style="width: 100%;"></td>
@@ -235,26 +411,9 @@ function tarot_edit() {
                     <td><?php wp_editor($card->custom_content, 'custom_content'); ?></td>
                 </tr>
             </table>
-
-            <button type="submit" class="button button-primary">Save Changes</button>
-            <a href="?page=tarot-cards" class="button">Back to List</a>
-        </form>
-    </div>
+            
+            <button type="submit" class="button button-primary">Update Card</button>
+            <a href="?page=tarot-cards" class="button">Cancel</a>
 
     <?php
 }
-
-add_action('admin_init', function () {
-    if (!isset($_POST['id'])) return;
-
-    check_admin_referer('tarot_edit');
-
-    global $wpdb;
-    $table = $wpdb->prefix . 'tarot_cards';
-
-    $wpdb->update($table, [
-        'custom_title' => sanitize_text_field($_POST['custom_title']),
-        'custom_content' => wp_kses_post($_POST['custom_content']),
-        'custom_excerpt' => sanitize_textarea_field($_POST['custom_excerpt'])
-    ], ['id' => intval($_POST['id'])]);
-});
