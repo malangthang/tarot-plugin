@@ -4,6 +4,8 @@ jQuery(document).ready(function($) {
     const TarotReader = {
         currentSpread: '3card',
         currentReading: null,
+        selectedCards: [], // Track drawn cards
+        isLoading: false, // Prevent multiple requests
         isShuffling: false,
 
         init: function() {
@@ -46,6 +48,10 @@ jQuery(document).ready(function($) {
                 alert('Please enter your question before starting the reading.');
                 return;
             }
+
+            // Reset state
+            this.selectedCards = [];
+            this.currentReading = null;
 
             // Hide question section, show shuffle section
             $('#question-section').hide();
@@ -91,32 +97,82 @@ jQuery(document).ready(function($) {
         },
 
         shuffleCards: function() {
-            if (this.isShuffling) return;
+            if (this.isShuffling || this.isLoading) return;
             this.startShuffleAnimation();
         },
 
         drawCards: function() {
+            if (this.isLoading) return;
+
+            this.isLoading = true;
             $('#loading-overlay').show();
 
             const question = $('#tarot-question').val();
 
+            // Step 1: Draw cards via AJAX
             $.ajax({
-                url: tarot_ajax.rest_url + 'reading',
+                url: tarot_ajax.ajax_url,
                 method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    question: question,
-                    spread_type: this.currentSpread
-                }),
-                success: (response) => {
-                    this.currentReading = response;
-                    this.displayReading(response);
+                data: {
+                    action: 'tarot_draw',
+                    spread_type: this.currentSpread,
+                    nonce: tarot_ajax.nonce
+                },
+                success: (drawResponse) => {
+                    if (drawResponse.success) {
+                        this.selectedCards = drawResponse.data.cards;
+
+                        // Step 2: Interpret cards via AJAX
+                        this.interpretCards(question);
+                    } else {
+                        alert('Error drawing cards. Please try again.');
+                        this.isLoading = false;
+                        $('#loading-overlay').hide();
+                    }
                 },
                 error: (xhr, status, error) => {
-                    console.error('Error creating reading:', error);
-                    alert('Error creating reading. Please try again.');
+                    console.error('Error drawing cards:', error);
+                    alert('Error drawing cards. Please try again.');
+                    this.isLoading = false;
+                    $('#loading-overlay').hide();
+                }
+            });
+        },
+
+        interpretCards: function(question) {
+            $.ajax({
+                url: tarot_ajax.ajax_url,
+                method: 'POST',
+                data: {
+                    action: 'tarot_interpret',
+                    cards: this.selectedCards,
+                    spread_type: this.currentSpread,
+                    question: question,
+                    nonce: tarot_ajax.nonce
                 },
-                complete: () => {
+                success: (interpretResponse) => {
+                    this.isLoading = false;
+                    $('#loading-overlay').hide();
+
+                    if (interpretResponse.success) {
+                        const readingData = {
+                            question: question,
+                            spread_type: this.currentSpread,
+                            cards: this.selectedCards,
+                            interpretation: interpretResponse.data.interpretation,
+                            cache_key: interpretResponse.data.cache_key
+                        };
+
+                        this.currentReading = readingData;
+                        this.displayReading(readingData);
+                    } else {
+                        alert('Error interpreting cards. Please try again.');
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Error interpreting cards:', error);
+                    alert('Error interpreting cards. Please try again.');
+                    this.isLoading = false;
                     $('#loading-overlay').hide();
                 }
             });
@@ -181,6 +237,7 @@ jQuery(document).ready(function($) {
 
         newReading: function() {
             this.currentReading = null;
+            this.selectedCards = [];
             $('#reading-results').hide();
             $('#shuffle-section').hide();
             $('#spread-selection').show();
@@ -204,9 +261,10 @@ jQuery(document).ready(function($) {
 
             const readingData = {
                 question: this.currentReading.question,
-                spread: this.currentReading.spread,
+                spread: this.currentReading.spread_type,
                 cards: this.currentReading.cards,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                cache_key: this.currentReading.cache_key
             };
 
             localStorage.setItem('lastTarotReading', JSON.stringify(readingData));

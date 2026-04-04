@@ -12,30 +12,72 @@ class TarotInterpreter {
      * Get synthesized interpretation based on spread type
      */
     public static function interpret($cards, $spread_type, $question) {
+        global $wpdb;
+
+        // Create cache key
+        $cache_key = md5($question . $spread_type . json_encode(array_map(function($card) {
+            return $card['card']['id'] . '_' . ($card['is_reversed'] ? '1' : '0');
+        }, $cards)));
+
+        // Check AI cache first
+        $cached = $wpdb->get_row($wpdb->prepare(
+            "SELECT result FROM {$wpdb->prefix}tarot_ai_cache WHERE hash_key = %s",
+            $cache_key
+        ));
+
+        if ($cached && !empty($cached->result)) {
+            $result = json_decode($cached->result, true);
+            if ($result) {
+                return $result;
+            }
+        }
+
         $interpreter = new self();
+        $result = null;
 
         switch ($spread_type) {
             case '1card':
-                return $interpreter->interpret_single_card($cards[0], $question);
-
+                $result = $interpreter->interpret_single_card($cards[0], $question);
+                break;
             case '3card':
-                return $interpreter->interpret_three_card($cards, $question);
-
+                $result = $interpreter->interpret_three_card($cards, $question);
+                break;
             case 'celtic-cross':
-                return $interpreter->interpret_celtic_cross($cards, $question);
-
+                $result = $interpreter->interpret_celtic_cross($cards, $question);
+                break;
             case 'horseshoe':
-                return $interpreter->interpret_horseshoe($cards, $question);
-
+                $result = $interpreter->interpret_horseshoe($cards, $question);
+                break;
             case 'love-spread':
-                return $interpreter->interpret_love_spread($cards, $question);
-
+                $result = $interpreter->interpret_love_spread($cards, $question);
+                break;
             case 'career-spread':
-                return $interpreter->interpret_career_spread($cards, $question);
-
+                $result = $interpreter->interpret_career_spread($cards, $question);
+                break;
             default:
-                return $interpreter->interpret_three_card($cards, $question);
+                $result = $interpreter->interpret_three_card($cards, $question);
         }
+
+        // Cache the result
+        if ($result) {
+            $wpdb->replace(
+                $wpdb->prefix . 'tarot_ai_cache',
+                [
+                    'hash_key' => $cache_key,
+                    'question' => $question,
+                    'cards_data' => json_encode(array_map(function($card) {
+                        return [
+                            'card_id' => $card['card']['id'],
+                            'is_reversed' => $card['is_reversed']
+                        ];
+                    }, $cards)),
+                    'spread_type' => $spread_type,
+                    'result' => json_encode($result)
+                ]
+            );
+        }
+
+        return $result;
     }
 
     /**
@@ -63,7 +105,7 @@ class TarotInterpreter {
     }
 
     /**
-     * 3 Card: Past-Present-Future with synthesis
+     * 3 Card: Past-Present-Future with enhanced AI-like synthesis
      */
     private function interpret_three_card($cards, $question) {
         $past = $this->get_meaning($cards[0]);
@@ -74,10 +116,27 @@ class TarotInterpreter {
         $present_card = $cards[1]['card']['name'];
         $future_card = $cards[2]['card']['name'];
 
-        // Synthesize a narrative
-        $narrative = "Your reading begins with <strong>$past_card</strong> in the past position, suggesting foundation of " . $this->extract_keyword($past) . ". ";
-        $narrative .= "Currently, <strong>$present_card</strong> shows " . $this->extract_keyword($present) . " in your situation. ";
-        $narrative .= "Looking ahead, <strong>$future_card</strong> indicates " . $this->extract_keyword($future) . " to come.";
+        // Enhanced synthesis with context and flow
+        $past_keywords = $this->extract_keywords($past, 3);
+        $present_keywords = $this->extract_keywords($present, 3);
+        $future_keywords = $this->extract_keywords($future, 3);
+
+        $narrative = "Your journey begins with <strong>$past_card</strong> in the past, establishing a foundation of " . implode(' and ', $past_keywords) . ". ";
+        $narrative .= "This foundation has led you to your current situation with <strong>$present_card</strong>, where you're experiencing " . implode(' and ', $present_keywords) . ". ";
+        $narrative .= "Looking ahead, <strong>$future_card</strong> suggests that " . implode(' and ', $future_keywords) . " will unfold in your future.";
+
+        // Add contextual advice based on question
+        if (stripos($question, 'love') !== false || stripos($question, 'relationship') !== false) {
+            $narrative .= " In matters of the heart, this progression shows ";
+            if ($cards[2]['is_reversed']) {
+                $narrative .= "challenges that will ultimately strengthen your emotional bonds.";
+            } else {
+                $narrative .= "a deepening of connection and mutual understanding.";
+            }
+        } elseif (stripos($question, 'career') !== false || stripos($question, 'job') !== false) {
+            $narrative .= " In your professional life, this sequence indicates ";
+            $narrative .= "skill development leading to meaningful opportunities ahead.";
+        }
 
         return [
             'title' => 'Past-Present-Future Reading',
@@ -169,12 +228,13 @@ class TarotInterpreter {
     }
 
     /**
-     * Love Spread: 5-card relationship reading
+     * Love Spread: Enhanced relationship-focused interpretation
      */
     private function interpret_love_spread($cards, $question) {
         $positions = ['Me', 'The Other Person', 'The Relationship', 'Challenges', 'Outcome'];
 
         $cards_display = [];
+        $card_names = [];
         foreach ($cards as $index => $card) {
             $meaning = $this->get_meaning($card);
             $cards_display[] = [
@@ -183,14 +243,30 @@ class TarotInterpreter {
                 'orientation' => $card['is_reversed'] ? 'Reversed' : 'Upright',
                 'meaning' => $meaning
             ];
+            $card_names[] = $card['card']['name'];
         }
 
-        $narrative = "In matters of the heart, your reading reveals: ";
-        $narrative .= "You are embodied by " . $cards[0]['card']['name'] . " while the other brings " . $cards[1]['card']['name'] . ". ";
-        $narrative .= "The relationship is influenced by " . $cards[2]['card']['name'] . ", leading to " . $cards[4]['card']['name'] . ".";
+        // Enhanced love narrative
+        $narrative = "In your relationship reading, you are represented by <strong>{$card_names[0]}</strong>, embodying " . implode(' and ', $this->extract_keywords($this->get_meaning($cards[0]), 2)) . ". ";
+        $narrative .= "Your partner brings <strong>{$card_names[1]}</strong> to the dynamic, contributing " . implode(' and ', $this->extract_keywords($this->get_meaning($cards[1]), 2)) . ". ";
+        $narrative .= "The relationship itself is characterized by <strong>{$card_names[2]}</strong>, showing " . implode(' and ', $this->extract_keywords($this->get_meaning($cards[2]), 2)) . ". ";
+
+        // Analyze challenges and outcome
+        $challenge_keywords = $this->extract_keywords($this->get_meaning($cards[3]), 2);
+        $outcome_keywords = $this->extract_keywords($this->get_meaning($cards[4]), 2);
+
+        $narrative .= "Current challenges include " . implode(' and ', $challenge_keywords) . " as shown by <strong>{$card_names[3]}</strong>. ";
+        $narrative .= "The outcome, revealed through <strong>{$card_names[4]}</strong>, suggests " . implode(' and ', $outcome_keywords) . " for your romantic journey.";
+
+        // Add specific advice based on card combinations
+        if ($cards[4]['is_reversed']) {
+            $narrative .= " While challenges exist, this reversed card indicates that growth and understanding can transform these obstacles into opportunities for deeper connection.";
+        } else {
+            $narrative .= " The upright outcome card suggests positive developments and harmonious resolution of current tensions.";
+        }
 
         return [
-            'title' => 'Love Reading',
+            'title' => 'Love & Relationship Reading',
             'summary' => "Your question: <strong>\"$question\"</strong>",
             'cards_display' => $cards_display,
             'interpretation' => $narrative
@@ -198,12 +274,13 @@ class TarotInterpreter {
     }
 
     /**
-     * Career Spread: 5-card career reading
+     * Career Spread: Enhanced work-focused interpretation
      */
     private function interpret_career_spread($cards, $question) {
         $positions = ['Your Skills', 'Current Role', 'Environment', 'Challenge', 'Opportunity'];
 
         $cards_display = [];
+        $card_names = [];
         foreach ($cards as $index => $card) {
             $meaning = $this->get_meaning($card);
             $cards_display[] = [
@@ -212,14 +289,30 @@ class TarotInterpreter {
                 'orientation' => $card['is_reversed'] ? 'Reversed' : 'Upright',
                 'meaning' => $meaning
             ];
+            $card_names[] = $card['card']['name'];
         }
 
-        $narrative = "Your career path reveals: ";
-        $narrative .= "Your skills shine with " . $cards[0]['card']['name'] . " in your current role as " . $cards[1]['card']['name'] . ". ";
-        $narrative .= "The environment presents " . $cards[3]['card']['name'] . " but offers opportunity through " . $cards[4]['card']['name'] . ".";
+        // Enhanced career narrative
+        $narrative = "Your career reading reveals a path of " . implode(' and ', $this->extract_keywords($this->get_meaning($cards[0]), 2)) . " through <strong>{$card_names[0]}</strong>. ";
+        $narrative .= "In your current role, <strong>{$card_names[1]}</strong> indicates " . implode(' and ', $this->extract_keywords($this->get_meaning($cards[1]), 2)) . ". ";
+        $narrative .= "The work environment is shaped by <strong>{$card_names[2]}</strong>, bringing " . implode(' and ', $this->extract_keywords($this->get_meaning($cards[2]), 2)) . ". ";
+
+        // Analyze challenges and opportunities
+        $challenge_keywords = $this->extract_keywords($this->get_meaning($cards[3]), 2);
+        $opportunity_keywords = $this->extract_keywords($this->get_meaning($cards[4]), 2);
+
+        $narrative .= "Current challenges include " . implode(' and ', $challenge_keywords) . " as represented by <strong>{$card_names[3]}</strong>. ";
+        $narrative .= "However, <strong>{$card_names[4]}</strong> opens doors to " . implode(' and ', $opportunity_keywords) . " in your professional journey.";
+
+        // Add career-specific advice
+        if ($cards[4]['is_reversed']) {
+            $narrative .= " Though opportunities may be delayed, this suggests that patience and continued skill development will eventually lead to the recognition you deserve.";
+        } else {
+            $narrative .= " The upright opportunity card indicates that your efforts are building toward significant professional advancement and fulfillment.";
+        }
 
         return [
-            'title' => 'Career Reading',
+            'title' => 'Career & Work Reading',
             'summary' => "Your question: <strong>\"$question\"</strong>",
             'cards_display' => $cards_display,
             'interpretation' => $narrative
@@ -249,11 +342,48 @@ class TarotInterpreter {
     }
 
     /**
-     * Extract first meaningful keyword from meaning text
+     * Extract multiple meaningful keywords from meaning text
+     */
+    private function extract_keywords($meaning, $count = 3) {
+        // Common tarot keywords to look for
+        $tarot_keywords = [
+            'love', 'relationship', 'career', 'money', 'success', 'challenge', 'opportunity',
+            'change', 'growth', 'healing', 'wisdom', 'intuition', 'strength', 'courage',
+            'patience', 'balance', 'harmony', 'conflict', 'decision', 'choice', 'path',
+            'journey', 'beginning', 'end', 'transformation', 'renewal', 'hope', 'fear',
+            'trust', 'faith', 'guidance', 'protection', 'abundance', 'lack', 'freedom',
+            'responsibility', 'commitment', 'passion', 'creativity', 'communication'
+        ];
+
+        $found_keywords = [];
+        $meaning_lower = strtolower($meaning);
+
+        foreach ($tarot_keywords as $keyword) {
+            if (strpos($meaning_lower, $keyword) !== false && count($found_keywords) < $count) {
+                $found_keywords[] = $keyword;
+            }
+        }
+
+        // If not enough keywords found, extract from text
+        if (count($found_keywords) < $count) {
+            $words = explode(' ', $meaning);
+            foreach ($words as $word) {
+                $word = trim($word, '.,!?;:"');
+                if (strlen($word) > 4 && !in_array(strtolower($word), $found_keywords) && count($found_keywords) < $count) {
+                    $found_keywords[] = strtolower($word);
+                }
+            }
+        }
+
+        return array_slice($found_keywords, 0, $count);
+    }
+
+    /**
+     * Extract first meaningful keyword from meaning text (legacy method)
      */
     private function extract_keyword($meaning) {
-        $words = explode(' ', $meaning);
-        return strtolower($words[0]);
+        $keywords = $this->extract_keywords($meaning, 1);
+        return $keywords[0] ?? 'guidance';
     }
 
     /**

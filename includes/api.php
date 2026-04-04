@@ -29,6 +29,13 @@ function tarot_register_api_routes() {
     ]);
 }
 
+// AJAX Endpoints for proper flow
+add_action('wp_ajax_tarot_draw', 'tarot_ajax_draw_cards');
+add_action('wp_ajax_nopriv_tarot_draw', 'tarot_ajax_draw_cards');
+
+add_action('wp_ajax_tarot_interpret', 'tarot_ajax_interpret_reading');
+add_action('wp_ajax_nopriv_tarot_interpret', 'tarot_ajax_interpret_reading');
+
 // Draw single card
 function tarot_api_draw_card($request) {
     global $wpdb;
@@ -195,8 +202,18 @@ function tarot_api_create_reading($request) {
         'user_id' => get_current_user_id(),
         'question' => $question,
         'spread_id' => $spread['id'],
-        'cards_json' => wp_json_encode($drawn_cards),
-        'result_json' => wp_json_encode($interpretation)
+        'cards_json' => wp_json_encode(array_map(function($card_data) {
+            return [
+                'card_id' => $card_data['card']['id'],
+                'card_name' => $card_data['card']['name'],
+                'position' => $card_data['position'],
+                'is_reversed' => $card_data['is_reversed']
+            ];
+        }, $drawn_cards)),
+        'result_json' => wp_json_encode($interpretation),
+        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? '',
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+        'status' => 'completed'
     ];
 
     $wpdb->insert($readings_table, $reading_data);
@@ -285,4 +302,115 @@ function get_default_positions($type) {
     }
 
     return $positions;
+}
+
+// AJAX Functions for proper flow
+function tarot_ajax_draw_cards() {
+    // Security check
+    check_ajax_referer('tarot_nonce', 'nonce');
+
+    $spread_type = sanitize_text_field($_POST['spread_type'] ?? '3card');
+
+    // Draw cards without duplicates
+    $drawn_cards = tarot_draw_random_cards($spread_type);
+
+    wp_send_json_success([
+        'cards' => $drawn_cards,
+        'spread_type' => $spread_type
+    ]);
+}
+
+function tarot_ajax_interpret_reading() {
+    // Security check
+    check_ajax_referer('tarot_nonce', 'nonce');
+
+    $cards_data = $_POST['cards'] ?? [];
+    $spread_type = sanitize_text_field($_POST['spread_type'] ?? '3card');
+    $question = sanitize_text_field($_POST['question'] ?? '');
+
+    if (empty($cards_data)) {
+        wp_send_json_error(['message' => 'No cards provided']);
+        return;
+    }
+
+    // Generate interpretation
+    require_once TAROT_PATH . 'includes/interpreter.php';
+    $interpretation = TarotInterpreter::interpret($cards_data, $spread_type, $question);
+
+    // Cache result for 1 hour
+    $cache_key = 'tarot_' . md5($question . $spread_type . json_encode($cards_data));
+    set_transient($cache_key, $interpretation, 3600);
+
+    wp_send_json_success([
+        'interpretation' => $interpretation,
+        'cache_key' => $cache_key
+    ]);
+}
+
+// Helper function for drawing cards (reusable)
+function tarot_draw_random_cards($spread_type = '3card') {
+    global $wpdb;
+    $cards_table = $wpdb->prefix . 'tarot_cards';
+    $meanings_table = $wpdb->prefix . 'tarot_card_meanings';
+
+    // Get spread info
+    $spread_response = tarot_api_get_spread(new WP_REST_Request('GET', "/tarot/v1/spread?type=$spread_type"));
+    if (is_wp_error($spread_response)) {
+        return [];
+    }
+    $spread = $spread_response['spread'];
+    $positions = $spread_response['positions'];
+
+    $total_cards = $spread['total_cards'];
+    $drawn_cards = [];
+    $used_card_ids = [];
+
+    for ($i = 0; $i < $total_cards; $i++) {
+        do {
+            $card = $wpdb->get_row("SELECT * FROM $cards_table ORDER BY RAND() LIMIT 1", ARRAY_A);
+        } while (in_array($card['id'], $used_card_ids));
+
+        $used_card_ids[] = $card['id'];
+
+        // Get meanings
+        $meanings = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $meanings_table WHERE card_id = %d",
+            $card['id']
+        ), ARRAY_A);
+
+        $card_meanings = [];
+        foreach ($meanings as $meaning) {
+            $card_meanings[$meaning['type']][$meaning['context']] = $meaning;
+        }
+
+        $is_reversed = rand(0, 1);
+
+        $drawn_cards[] = [
+            'card' => $card,
+            'meanings' => $card_meanings,
+            'is_reversed' => $is_reversed,
+            'orientation' => $is_reversed ? 'reversed' : 'upright',
+            'position' => $positions[$i]['name'] ?? 'Position ' . ($i + 1)
+        ];
+    }
+
+    return $drawn_cards;
+}
+
+// Settings helper functions
+function tarot_get_setting($key, $default = '') {
+    global $wpdb;
+    $value = $wpdb->get_var($wpdb->prepare(
+        "SELECT setting_value FROM {$wpdb->prefix}tarot_settings WHERE setting_key = %s",
+        $key
+    ));
+    return $value !== null ? $value : $default;
+}
+
+function tarot_update_setting($key, $value) {
+    global $wpdb;
+    return $wpdb->replace(
+        $wpdb->prefix . 'tarot_settings',
+        ['setting_key' => $key, 'setting_value' => $value]
+    );
 }

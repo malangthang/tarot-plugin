@@ -1,16 +1,17 @@
-{
-  "slug": "the-fool",
+[
+  {
+    "slug": "the-fool",
 
-  "type": "tarot",
+    "type": "tarot",
 
-  "meta": {
-    "name": "The Fool",
-    "arcana": "major",
-    "suit": null,
-    "number": 0,
-    "deck": "rider-waite",
-    "image": "the-fool.jpg"
-  },
+    "meta": {
+      "name": "The Fool",
+      "arcana": "major",
+      "suit": null,
+      "number": 0,
+      "deck": "rider-waite",
+      "image": "the-fool.jpg"
+    },
 
   "meaning": {
     "upright": {
@@ -133,4 +134,305 @@
     "timing": "mùa xuân",
     "numerology": 0
   }
+},
+{
+  "slug": "the-magician",
+  "type": "tarot",
+
+  "meta": {
+    "name": "The Magician",
+    "arcana": "major",
+    "suit": null,
+    "number": 1,
+    "deck": "rider-waite",
+    "image": "the-magician.jpg"
+  },
+
+  "meaning": {
+    "upright": {
+      "general": "The Magician đại diện cho khả năng hành động, sự sáng tạo và biến ý tưởng thành hiện thực.",
+
+      "keywords": [
+        "sáng tạo",
+        "hành động",
+        "kỹ năng",
+        "tự tin",
+        "biểu hiện"
+      ],
+
+      "contexts": [
+        {
+          "type": "love",
+          "text": "Trong tình yêu, thể hiện sự chủ động và khả năng tạo nên mối quan hệ như mong muốn."
+        },
+        {
+          "type": "career",
+          "text": "Trong công việc, bạn có đủ kỹ năng để thành công và nên tận dụng cơ hội."
+        },
+        {
+          "type": "finance",
+          "text": "Tài chính ổn định nếu bạn biết tận dụng nguồn lực và cơ hội."
+        },
+        {
+          "type": "health",
+          "text": "Sức khỏe tốt, bạn có khả năng kiểm soát và cải thiện tình trạng hiện tại."
+        }
+      ],
+
+      "advice": "Hãy tin vào năng lực của mình và hành động ngay.",
+      "message": "Bạn có tất cả những gì cần thiết để thành công.",
+      "yes_no": "yes"
+    },
+
+    "reversed": {
+      "general": "Thiếu tự tin, lừa dối hoặc không tận dụng được tiềm năng.",
+
+      "keywords": [
+        "thiếu tự tin",
+        "lừa dối",
+        "trì hoãn",
+        "thiếu tập trung"
+      ],
+
+      "contexts": [
+        {
+          "type": "love",
+          "text": "Có thể có sự thiếu trung thực hoặc thiếu rõ ràng trong mối quan hệ."
+        },
+        {
+          "type": "career",
+          "text": "Bạn chưa tận dụng hết khả năng hoặc đang đi sai hướng."
+        },
+        {
+          "type": "finance",
+          "text": "Cẩn thận với quyết định tài chính thiếu minh bạch."
+        },
+        {
+          "type": "health",
+          "text": "Thiếu động lực chăm sóc sức khỏe."
+        }
+      ],
+
+      "advice": "Xem lại mục tiêu và tập trung vào hành động thực tế.",
+      "message": "Sức mạnh nằm trong bạn, nhưng bạn đang bỏ quên nó.",
+      "yes_no": "no"
+    }
+  },
+
+  "content": {
+    "intro": "The Magician là biểu tượng của sự sáng tạo và khả năng biến ý tưởng thành hiện thực.",
+    "body": "<p>Lá bài này thể hiện sức mạnh cá nhân và khả năng sử dụng nguồn lực để đạt mục tiêu.</p>",
+    "sections": [],
+    "seo": {
+      "title": "Ý nghĩa lá The Magician",
+      "description": "Khám phá ý nghĩa lá The Magician trong tarot."
+    }
+  },
+
+  "extra": {
+    "symbolism": [],
+    "timing": "hiện tại",
+    "numerology": 1
+  }
+},
+{
+  "slug": "the-high-priestess",
+  "type": "tarot",
+
+  "meta": {
+    "name": "The High Priestess",
+    "arcana": "major",
+    "suit": null,
+    "number": 2,
+    "deck": "rider-waite",
+    "image": "the-high-priestess.jpg"
+  },
+
+  "meaning": {
+    "upright": {
+      "general": "The High Priestess đại diện cho trực giác, bí ẩn và sự hiểu biết sâu sắc bên trong.",
+
+      "keywords": [
+        "trực giác",
+        "bí ẩn",
+        "tiềm thức",
+        "im lặng",
+        "hiểu biết"
+      ],
+
+      "contexts": [
+        {
+          "type": "love",
+          "text": "Trong tình yêu, cần lắng nghe cảm xúc bên trong thay vì hành động vội vàng."
+        },
+        {
+          "type": "career",
+          "text": "Trong công việc, nên quan sát và phân tích trước khi quyết định."
+        },
+        {
+          "type": "finance",
+          "text": "Không nên vội vàng trong các quyết định tài chính."
+        },
+        {
+          "type": "health",
+          "text": "Lắng nghe cơ thể và cảm nhận bên trong."
+        }
+      ],
+
+      "advice": "Hãy tin vào trực giác của bạn.",
+      "message": "Sự thật nằm trong im lặng.",
+      "yes_no": "maybe"
+    },
+
+    "reversed": {
+      "general": "Bỏ qua trực giác hoặc bị che giấu sự thật.",
+
+      "keywords": [
+        "bối rối",
+        "thiếu rõ ràng",
+        "bí mật",
+        "bỏ qua trực giác"
+      ],
+
+      "contexts": [
+        {
+          "type": "love",
+          "text": "Có thể có bí mật hoặc hiểu lầm trong mối quan hệ."
+        },
+        {
+          "type": "career",
+          "text": "Thiếu thông tin hoặc không nhìn rõ vấn đề."
+        },
+        {
+          "type": "finance",
+          "text": "Cần cẩn trọng với thông tin chưa rõ ràng."
+        },
+        {
+          "type": "health",
+          "text": "Có thể đang bỏ qua tín hiệu quan trọng của cơ thể."
+        }
+      ],
+
+      "advice": "Dừng lại và lắng nghe bản thân.",
+      "message": "Không phải mọi thứ đều rõ ràng như bạn nghĩ.",
+      "yes_no": "no"
+    }
+  },
+
+  "content": {
+    "intro": "The High Priestess là biểu tượng của trực giác và sự hiểu biết sâu sắc.",
+    "body": "<p>Lá bài này khuyến khích bạn tin vào tiếng nói bên trong.</p>",
+    "sections": [],
+    "seo": {
+      "title": "Ý nghĩa lá The High Priestess",
+      "description": "Giải mã trực giác và bí ẩn trong tarot."
+    }
+  },
+
+  "extra": {
+    "symbolism": [],
+    "timing": "ban đêm",
+    "numerology": 2
+  }
+},
+{
+  "slug": "the-empress",
+  "type": "tarot",
+
+  "meta": {
+    "name": "The Empress",
+    "arcana": "major",
+    "suit": null,
+    "number": 3,
+    "deck": "rider-waite",
+    "image": "the-empress.jpg"
+  },
+
+  "meaning": {
+    "upright": {
+      "general": "The Empress đại diện cho sự nuôi dưỡng, sáng tạo và tình yêu.",
+
+      "keywords": [
+        "nuôi dưỡng",
+        "tình yêu",
+        "sáng tạo",
+        "phát triển",
+        "sinh sôi"
+      ],
+
+      "contexts": [
+        {
+          "type": "love",
+          "text": "Trong tình yêu, biểu thị sự chăm sóc và mối quan hệ phát triển mạnh mẽ."
+        },
+        {
+          "type": "career",
+          "text": "Trong công việc, là thời điểm sáng tạo và phát triển dự án."
+        },
+        {
+          "type": "finance",
+          "text": "Tài chính ổn định và có xu hướng tăng trưởng."
+        },
+        {
+          "type": "health",
+          "text": "Sức khỏe tốt, cần chăm sóc bản thân nhiều hơn."
+        }
+      ],
+
+      "advice": "Hãy chăm sóc bản thân và những gì bạn yêu quý.",
+      "message": "Sự phát triển đến từ tình yêu và sự kiên nhẫn.",
+      "yes_no": "yes"
+    },
+
+    "reversed": {
+      "general": "Thiếu cân bằng, phụ thuộc hoặc thiếu chăm sóc bản thân.",
+
+      "keywords": [
+        "thiếu cân bằng",
+        "phụ thuộc",
+        "thiếu chăm sóc",
+        "cảm xúc tiêu cực"
+      ],
+
+      "contexts": [
+        {
+          "type": "love",
+          "text": "Có thể là sự phụ thuộc hoặc thiếu quan tâm trong mối quan hệ."
+        },
+        {
+          "type": "career",
+          "text": "Thiếu sáng tạo hoặc mất động lực."
+        },
+        {
+          "type": "finance",
+          "text": "Chi tiêu thiếu kiểm soát."
+        },
+        {
+          "type": "health",
+          "text": "Cần chú ý chăm sóc bản thân hơn."
+        }
+      ],
+
+      "advice": "Tìm lại sự cân bằng và yêu thương chính mình.",
+      "message": "Bạn không thể chăm sóc người khác nếu quên bản thân.",
+      "yes_no": "no"
+    }
+  },
+
+  "content": {
+    "intro": "The Empress là biểu tượng của sự nuôi dưỡng và phát triển.",
+    "body": "<p>Lá bài này gắn liền với tình yêu, thiên nhiên và sự sinh sôi.</p>",
+    "sections": [],
+    "seo": {
+      "title": "Ý nghĩa lá The Empress",
+      "description": "Tìm hiểu ý nghĩa The Empress trong tarot."
+    }
+  },
+
+  "extra": {
+    "symbolism": [],
+    "timing": "mùa hè",
+    "numerology": 3
+  }
 }
+]

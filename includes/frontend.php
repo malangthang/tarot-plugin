@@ -47,7 +47,7 @@ add_action('template_redirect', function () {
     // Schema validation: kiểm tra trường trong DB
     $expected_fields = [
         'id', 'name', 'slug', 'arcana', 'suit', 'number', 'deck',
-        'image', 'description', 'created_at', 'updated_at'
+        'image', 'description', 'meta_data', 'created_at', 'updated_at'
     ];
 
     $actual_fields = $wpdb->get_col("SHOW COLUMNS FROM $table", 0);
@@ -93,7 +93,6 @@ add_action('template_redirect', function () {
     echo "<div class='tarot-page'>";
     echo $schema_notice;
     echo "<div class='tarot-card-single'>";
-    echo "<a href='" . esc_url(home_url('/tarot')) . "' class='button'>Back to Tarot</a>";
     echo "<h1>" . esc_html($title) . "</h1>";
     echo "<div class='tarot-card-meta'>";
     echo "<p><strong>Arcana:</strong> " . esc_html($card['arcana']) . "</p>";
@@ -132,19 +131,7 @@ add_action('template_redirect', function () {
 });
 
 add_shortcode('tarot_reader', function ($atts) {
-    wp_enqueue_script('jquery');
-    wp_enqueue_script('jquery-ui-core');
-    wp_enqueue_script('jquery-ui-tabs');
-    wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
-    wp_enqueue_style('tarot-reader-css', plugins_url('assets/css/tarot-reader.css', TAROT_FILE));
-    wp_enqueue_script('tarot-reader-js', plugins_url('assets/js/tarot-reader.js', TAROT_FILE), ['jquery'], '1.0', true);
-
-    wp_localize_script('tarot-reader-js', 'tarot_ajax', [
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'rest_url' => rest_url('tarot/v1/'),
-        'nonce' => wp_create_nonce('tarot_reader_nonce')
-    ]);
-
+    // Assets are enqueued globally in main plugin file
     ob_start(); ?>
 
     <div id="tarot-reader" class="tarot-reader-container">
@@ -171,6 +158,16 @@ add_shortcode('tarot_reader', function ($atts) {
                     <h4>Horseshoe</h4>
                     <p>7-card spread for detailed guidance</p>
                     <span class="card-count">7 cards</span>
+                </div>
+                <div class="spread-option" data-spread="love-spread">
+                    <h4>Love Spread</h4>
+                    <p>5-card spread for relationship insights</p>
+                    <span class="card-count">5 cards</span>
+                </div>
+                <div class="spread-option" data-spread="career-spread">
+                    <h4>Career Spread</h4>
+                    <p>5-card spread for career guidance</p>
+                    <span class="card-count">5 cards</span>
                 </div>
             </div>
         </div>
@@ -212,6 +209,67 @@ add_shortcode('tarot_reader', function ($atts) {
             <div class="loading-spinner"></div>
             <p>Consulting the cards...</p>
         </div>
+    </div>
+
+    <?php return ob_get_clean();
+});
+
+add_shortcode('tarot_cards', function ($atts) {
+    global $wpdb;
+
+    $atts = shortcode_atts([
+        'arcana' => '', // major, minor, or empty for all
+        'suit' => '', // cups, swords, wands, pentacles, or empty for all
+        'limit' => 0, // 0 for all
+        'columns' => 6, // number of columns in grid
+        'show_description' => 'false', // show card description
+        'order_by' => 'arcana DESC, number ASC' // order
+    ], $atts);
+
+    $table = $wpdb->prefix . 'tarot_cards';
+    $where = [];
+
+    if (!empty($atts['arcana'])) {
+        $where[] = $wpdb->prepare("arcana = %s", $atts['arcana']);
+    }
+
+    if (!empty($atts['suit'])) {
+        $where[] = $wpdb->prepare("suit = %s", $atts['suit']);
+    }
+
+    $where_clause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+    $limit_clause = $atts['limit'] > 0 ? $wpdb->prepare("LIMIT %d", $atts['limit']) : '';
+    $order_clause = "ORDER BY " . sanitize_sql_orderby($atts['order_by']);
+
+    $cards = $wpdb->get_results("SELECT * FROM $table $where_clause $order_clause $limit_clause", ARRAY_A);
+
+    if (empty($cards)) {
+        return '<p>No cards found.</p>';
+    }
+
+    $columns = intval($atts['columns']);
+    $show_description = $atts['show_description'] === 'true';
+
+    ob_start(); ?>
+
+    <div class="tarot-cards-grid" style="display: grid; grid-template-columns: repeat(<?php echo $columns; ?>, 1fr); gap: 20px; margin: 20px 0;">
+        <?php foreach ($cards as $card): ?>
+        <div class="tarot-card-item">
+            <a href="<?php echo esc_url(home_url('/tarot/' . $card['slug'])); ?>">
+                <?php if ($card['image']): ?>
+                    <div class="tarot-card-image">
+                        <img src="<?php echo esc_url($card['image']); ?>"
+                             alt="<?php echo esc_attr($card['name']); ?>">
+                    </div>
+                <?php else: ?>
+                    <div class="tarot-card-placeholder">
+                        No Image
+                    </div>
+                <?php endif; ?>
+
+            </a>
+        </div>
+        <?php endforeach; ?>
     </div>
 
     <?php return ob_get_clean();
