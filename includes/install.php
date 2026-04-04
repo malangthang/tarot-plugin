@@ -54,6 +54,68 @@ function tarot_install() {
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
 
+    // Create tarot_card_meanings table
+    $meanings_table = $wpdb->prefix . 'tarot_card_meanings';
+    $meanings_sql = "CREATE TABLE $meanings_table (
+        id INT NOT NULL AUTO_INCREMENT,
+        card_id INT NOT NULL,
+        type ENUM('upright','reversed'),
+        context ENUM('general','love','career','finance','health'),
+        meaning TEXT,
+        keywords TEXT,
+        advice TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        FOREIGN KEY (card_id) REFERENCES $table(id)
+    ) {$wpdb->get_charset_collate()};";
+    
+    dbDelta($meanings_sql);
+
+    // Create tarot_spreads table
+    $spreads_table = $wpdb->prefix . 'tarot_spreads';
+    $spreads_sql = "CREATE TABLE $spreads_table (
+        id INT NOT NULL AUTO_INCREMENT,
+        name VARCHAR(100),
+        slug VARCHAR(100),
+        total_cards INT,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY slug (slug)
+    ) {$wpdb->get_charset_collate()};";
+    
+    dbDelta($spreads_sql);
+
+    // Create tarot_spread_positions table
+    $positions_table = $wpdb->prefix . 'tarot_spread_positions';
+    $positions_sql = "CREATE TABLE $positions_table (
+        id INT NOT NULL AUTO_INCREMENT,
+        spread_id INT NOT NULL,
+        position_order INT,
+        name VARCHAR(100),
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        FOREIGN KEY (spread_id) REFERENCES $spreads_table(id)
+    ) {$wpdb->get_charset_collate()};";
+    
+    dbDelta($positions_sql);
+
+    // Create tarot_readings table
+    $readings_table = $wpdb->prefix . 'tarot_readings';
+    $readings_sql = "CREATE TABLE $readings_table (
+        id INT NOT NULL AUTO_INCREMENT,
+        user_id INT NULL,
+        question TEXT,
+        spread_id INT NOT NULL,
+        result_json JSON,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        FOREIGN KEY (spread_id) REFERENCES $spreads_table(id)
+    ) {$wpdb->get_charset_collate()};";
+    
+    dbDelta($readings_sql);
+
     // Flush rewrite rules to support /tarot/{slug} endpoints
     flush_rewrite_rules();
 }
