@@ -36,40 +36,30 @@ add_action('wp_ajax_nopriv_tarot_draw', 'tarot_ajax_draw_cards');
 add_action('wp_ajax_tarot_interpret', 'tarot_ajax_interpret_reading');
 add_action('wp_ajax_nopriv_tarot_interpret', 'tarot_ajax_interpret_reading');
 
+
 // Draw single card
 function tarot_api_draw_card($request) {
     global $wpdb;
-    $cards_table = $wpdb->prefix . 'tarot_cards';
-    $meanings_table = $wpdb->prefix . 'tarot_card_meanings';
 
-    // Get random card
-    $card = $wpdb->get_row("SELECT * FROM $cards_table ORDER BY RAND() LIMIT 1", ARRAY_A);
+    $cards = $wpdb->get_results("
+        SELECT id, name, image 
+        FROM tarot_cards 
+        ORDER BY RAND() 
+        LIMIT 3
+    ");
 
-    if (!$card) {
-        return new WP_Error('no_cards', 'No cards found', ['status' => 404]);
+    $result = [];
+
+    foreach ($cards as $card) {
+        $result[] = [
+            'id' => $card->id,
+            'name' => $card->name,
+            'image' => $card->image,
+            'orientation' => rand(0,1) ? 'reversed' : 'upright'
+        ];
     }
 
-    // Get meanings
-    $meanings = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM $meanings_table WHERE card_id = %d",
-        $card['id']
-    ), ARRAY_A);
-
-    // Organize meanings
-    $card_meanings = [];
-    foreach ($meanings as $meaning) {
-        $card_meanings[$meaning['type']][$meaning['context']] = $meaning;
-    }
-
-    // Random upright/reversed
-    $is_reversed = rand(0, 1);
-
-    return [
-        'card' => $card,
-        'meanings' => $card_meanings,
-        'is_reversed' => $is_reversed,
-        'orientation' => $is_reversed ? 'reversed' : 'upright'
-    ];
+    return $result;
 }
 
 // Get spread with positions

@@ -130,88 +130,42 @@ add_action('template_redirect', function () {
     exit;
 });
 
-add_shortcode('tarot_reader', function ($atts) {
-    // Assets are enqueued globally in main plugin file
+add_shortcode('tarot_reader', function () {
     ob_start(); ?>
 
-    <div id="tarot-reader" class="tarot-reader-container">
-        <!-- Spread Selection -->
-        <div id="spread-selection" class="spread-selection">
-            <h3>Choose Your Spread</h3>
-            <div class="spread-options">
-                <div class="spread-option" data-spread="1card">
-                    <h4>Single Card</h4>
-                    <p>Quick insight for simple questions</p>
-                    <span class="card-count">1 card</span>
-                </div>
-                <div class="spread-option active" data-spread="3card">
-                    <h4>Past, Present, Future</h4>
-                    <p>Classic 3-card spread for timeline reading</p>
-                    <span class="card-count">3 cards</span>
-                </div>
-                <div class="spread-option" data-spread="celtic-cross">
-                    <h4>Celtic Cross</h4>
-                    <p>Comprehensive 10-card spread</p>
-                    <span class="card-count">10 cards</span>
-                </div>
-                <div class="spread-option" data-spread="horseshoe">
-                    <h4>Horseshoe</h4>
-                    <p>7-card spread for detailed guidance</p>
-                    <span class="card-count">7 cards</span>
-                </div>
-                <div class="spread-option" data-spread="love-spread">
-                    <h4>Love Spread</h4>
-                    <p>5-card spread for relationship insights</p>
-                    <span class="card-count">5 cards</span>
-                </div>
-                <div class="spread-option" data-spread="career-spread">
-                    <h4>Career Spread</h4>
-                    <p>5-card spread for career guidance</p>
-                    <span class="card-count">5 cards</span>
-                </div>
-            </div>
-        </div>
+<div id="tarotApp" class="tarot-app">
 
-        <!-- Question Input -->
-        <div id="question-section" class="question-section">
-            <h3>What is your question?</h3>
-            <textarea id="tarot-question" placeholder="Enter your question here..." rows="3"></textarea>
-            <button id="start-reading" class="start-reading-btn">Begin Reading</button>
-        </div>
-
-        <!-- Shuffle Animation -->
-        <div id="shuffle-section" class="shuffle-section" style="display: none;">
-            <h3>Shuffling the cards...</h3>
-            <div class="card-deck">
-                <div class="card back" id="deck-card-1"></div>
-                <div class="card back" id="deck-card-2"></div>
-                <div class="card back" id="deck-card-3"></div>
-                <div class="card back" id="deck-card-4"></div>
-                <div class="card back" id="deck-card-5"></div>
-            </div>
-            <div class="shuffle-controls">
-                <button id="shuffle-btn" class="shuffle-btn">Shuffle</button>
-                <button id="draw-cards-btn" class="draw-cards-btn" style="display: none;">Draw Cards</button>
-            </div>
-        </div>
-
-        <!-- Reading Results -->
-        <div id="reading-results" class="reading-results" style="display: none;">
-            <!-- Content will be populated by JavaScript -->
-            <div class="reading-actions" style="margin-top: 40px;">
-                <button id="new-reading" class="new-reading-btn">New Reading</button>
-                <button id="save-reading" class="save-reading-btn">Save Reading</button>
-            </div>
-        </div>
-
-        <!-- Loading Overlay -->
-        <div id="loading-overlay" class="loading-overlay" style="display: none;">
-            <div class="loading-spinner"></div>
-            <p>Consulting the cards...</p>
+    <!-- STEP 1 -->
+    <div class="tarot-topic">
+        <h2>Chọn chủ đề</h2>
+        <div class="topic-list">
+            <div class="topic" data-topic="love">Tình cảm</div>
+            <div class="topic" data-topic="work">Công việc</div>
+            <div class="topic" data-topic="finance">Tài chính</div>
+            <div class="topic" data-topic="health">Sức khỏe</div>
         </div>
     </div>
 
-    <?php return ob_get_clean();
+    <!-- STEP 2 -->
+    <div class="tarot-stage hidden">
+
+        <div id="countdown">3</div>
+
+        <div id="cardDeck" class="card-deck"></div>
+
+    </div>
+
+    <!-- BUTTON -->
+    <div class="tarot-actions hidden">
+        <button id="btnResult">Xem kết quả</button>
+    </div>
+
+    <!-- RESULT -->
+    <div id="tarotResult" class="hidden"></div>
+
+</div>
+
+<?php return ob_get_clean();
 });
 
 add_shortcode('tarot_cards', function ($atts) {
