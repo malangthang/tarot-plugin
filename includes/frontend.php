@@ -27,6 +27,18 @@ add_action('template_redirect', function () {
         return;
     }
 
+    // Get meanings
+    $meanings = $wpdb->get_results(
+        $wpdb->prepare("SELECT * FROM {$wpdb->prefix}tarot_card_meanings WHERE card_id=%d", $card['id']),
+        ARRAY_A
+    );
+
+    // Get content
+    $content = $wpdb->get_row(
+        $wpdb->prepare("SELECT * FROM {$wpdb->prefix}tarot_card_contents WHERE card_id=%d", $card['id']),
+        ARRAY_A
+    );
+
     // Prevent output during plugin activation or admin requests
     if (defined('WP_INSTALLING') || is_admin() || wp_doing_ajax()) {
         return;
@@ -34,18 +46,8 @@ add_action('template_redirect', function () {
 
     // Schema validation: kiểm tra trường trong DB
     $expected_fields = [
-        'id', 'name', 'slug', 'arcana', 'number', 'deck',
-        'image', 'custom_image', 'description',
-        'meaning_upright', 'meaning_reversed',
-        'love_upright', 'love_reversed',
-        'career_upright', 'career_reversed',
-        'finance_upright', 'finance_reversed',
-        'health_upright', 'health_reversed',
-        'keywords_upright', 'keywords_reversed',
-        'yes_no_upright', 'yes_no_reversed',
-        'advice_upright', 'advice_reversed', 'advice_message',
-        'custom_title', 'custom_content', 'custom_excerpt',
-        'created_at', 'updated_at'
+        'id', 'name', 'slug', 'arcana', 'suit', 'number', 'deck',
+        'image', 'description', 'created_at', 'updated_at'
     ];
 
     $actual_fields = $wpdb->get_col("SHOW COLUMNS FROM $table", 0);
@@ -65,20 +67,26 @@ add_action('template_redirect', function () {
         $schema_notice .= "</div>";
     }
 
-    $title = $card['custom_title'] ?: $card['name'];
-    $image = $card['custom_image'] ?: $card['image'];
+    $title = $content['title'] ?: $card['name'];
+    $image = $card['image'];
     $description = $card['description'] ?: '';
 
-    $upright = $card['meaning_upright'];
-    $reversed = $card['meaning_reversed'];
-    $love_upright = $card['love_upright'];
-    $love_reversed = $card['love_reversed'];
-    $career_upright = $card['career_upright'];
-    $career_reversed = $card['career_reversed'];
-    $finance_upright = $card['finance_upright'];
-    $finance_reversed = $card['finance_reversed'];
-    $health_upright = $card['health_upright'];
-    $health_reversed = $card['health_reversed'];
+    // Organize meanings by type and context
+    $card_meanings = [];
+    foreach ($meanings as $meaning) {
+        $card_meanings[$meaning['type']][$meaning['context']] = $meaning;
+    }
+
+    $upright_general = $card_meanings['upright']['general']['meaning'] ?? '';
+    $reversed_general = $card_meanings['reversed']['general']['meaning'] ?? '';
+    $love_upright = $card_meanings['upright']['love']['meaning'] ?? '';
+    $love_reversed = $card_meanings['reversed']['love']['meaning'] ?? '';
+    $career_upright = $card_meanings['upright']['career']['meaning'] ?? '';
+    $career_reversed = $card_meanings['reversed']['career']['meaning'] ?? '';
+    $finance_upright = $card_meanings['upright']['finance']['meaning'] ?? '';
+    $finance_reversed = $card_meanings['reversed']['finance']['meaning'] ?? '';
+    $health_upright = $card_meanings['upright']['health']['meaning'] ?? '';
+    $health_reversed = $card_meanings['reversed']['health']['meaning'] ?? '';
 
     get_header();
 
@@ -102,7 +110,7 @@ add_action('template_redirect', function () {
     }
 
     echo "<div class='tarot-card-meanings'><h2>Upright</h2>";
-    echo "<p>" . nl2br(esc_html($upright)) . "</p>";
+    echo "<p>" . nl2br(esc_html($upright_general)) . "</p>";
     echo "<h3>Love</h3><p>" . nl2br(esc_html($love_upright)) . "</p>";
     echo "<h3>Career</h3><p>" . nl2br(esc_html($career_upright)) . "</p>";
     echo "<h3>Finance</h3><p>" . nl2br(esc_html($finance_upright)) . "</p>";
@@ -110,7 +118,7 @@ add_action('template_redirect', function () {
     echo "</div>";
 
     echo "<div class='tarot-card-meanings'><h2>Reversed</h2>";
-    echo "<p>" . nl2br(esc_html($reversed)) . "</p>";
+    echo "<p>" . nl2br(esc_html($reversed_general)) . "</p>";
     echo "<h3>Love</h3><p>" . nl2br(esc_html($love_reversed)) . "</p>";
     echo "<h3>Career</h3><p>" . nl2br(esc_html($career_reversed)) . "</p>";
     echo "<h3>Finance</h3><p>" . nl2br(esc_html($finance_reversed)) . "</p>";

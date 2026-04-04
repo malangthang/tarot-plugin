@@ -30,12 +30,11 @@ function tarot_import_page() {
 
 function tarot_import_from_json() {
     global $wpdb;
-    $table = $wpdb->prefix . 'tarot_cards';
-
+    
     $json_file = TAROT_PATH . 'data/tarot.json';
     
     if (!file_exists($json_file)) {
-        wp_die('JSON file not found: ' . $json_file);
+        return new WP_Error('no_file', 'JSON file not found: ' . $json_file);
     }
 
     $json_content = file_get_contents($json_file);
@@ -46,126 +45,100 @@ function tarot_import_from_json() {
     }
 
     if (!is_array($data)) {
-        wp_die('Invalid JSON format');
+        return new WP_Error('invalid_json', 'Invalid JSON format');
     }
 
     $imported = 0;
 
-    $table_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
-    if ($table_exists !== $table) {
-        return new WP_Error('no_table', 'Database table "'.esc_html($table).'" does not exist. Activate plugin or re-install first.');
-    }
-
     foreach ($data as $card) {
-        // Map new JSON structure to database fields
-        $name = $card['meta']['name'] ?? '';
-        $slug = $card['slug'] ?? '';
-        $arcana = $card['meta']['arcana'] ?? '';
-        $number = $card['meta']['number'] ?? 0;
-        $deck = $card['meta']['deck'] ?? '';
-        $image = $card['meta']['image'] ?? '';
-        $description = $card['content']['intro'] ?? '';
+        // Import card
+        $card_data = [
+            'name' => $card['meta']['name'] ?? '',
+            'slug' => $card['slug'] ?? '',
+            'arcana' => $card['meta']['arcana'] ?? '',
+            'suit' => $card['meta']['suit'] ?: null,
+            'number' => $card['meta']['number'] ?? 0,
+            'deck' => $card['meta']['deck'] ?? '',
+            'image' => $card['meta']['image'] ?? '',
+            'description' => $card['content']['intro'] ?? ''
+        ];
 
-        $meaning_upright = $card['meaning']['upright']['general'] ?? '';
-        $meaning_reversed = $card['meaning']['reversed']['general'] ?? '';
-
-        $love_upright = $card['meaning']['upright']['contexts']['love'] ?? '';
-        $love_reversed = $card['meaning']['reversed']['contexts']['love'] ?? '';
-        $career_upright = $card['meaning']['upright']['contexts']['career'] ?? '';
-        $career_reversed = $card['meaning']['reversed']['contexts']['career'] ?? '';
-        $finance_upright = $card['meaning']['upright']['contexts']['finance'] ?? '';
-        $finance_reversed = $card['meaning']['reversed']['contexts']['finance'] ?? '';
-        $health_upright = $card['meaning']['upright']['contexts']['health'] ?? '';
-        $health_reversed = $card['meaning']['reversed']['contexts']['health'] ?? '';
-
-        $keywords_upright = is_array($card['meaning']['upright']['keywords'] ?? null) ? implode(', ', $card['meaning']['upright']['keywords']) : '';
-        $keywords_reversed = is_array($card['meaning']['reversed']['keywords'] ?? null) ? implode(', ', $card['meaning']['reversed']['keywords']) : '';
-
-        $yes_no_upright = $card['meaning']['upright']['yes_no'] ? 'Yes' : 'No';
-        $yes_no_reversed = $card['meaning']['reversed']['yes_no'] ? 'Yes' : 'No';
-
-        $advice_upright = $card['meaning']['upright']['advice'] ?? '';
-        $advice_reversed = $card['meaning']['reversed']['advice'] ?? '';
-        $advice_message = $card['meaning']['upright']['message'] ?? '';
-
-        $custom_title = $card['content']['seo']['title'] ?? '';
-        $custom_content = $card['content']['body'] ?? '';
-        $custom_excerpt = $card['content']['seo']['description'] ?? '';
-
-        // Check if card already exists
-        $existing = $wpdb->get_row($wpdb->prepare(
-            "SELECT id FROM $table WHERE slug=%s",
-            $slug
+        // Check if card exists
+        $existing_card = $wpdb->get_row($wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}tarot_cards WHERE slug=%s",
+            $card_data['slug']
         ));
 
-        if ($existing) {
-            // Update existing
-            $wpdb->update($table, [
-                'name' => $name,
-                'arcana' => $arcana,
-                'number' => $number,
-                'deck' => $deck,
-                'image' => $image,
-                'description' => $description,
-                'meaning_upright' => $meaning_upright,
-                'meaning_reversed' => $meaning_reversed,
-                'love_upright' => $love_upright,
-                'love_reversed' => $love_reversed,
-                'career_upright' => $career_upright,
-                'career_reversed' => $career_reversed,
-                'finance_upright' => $finance_upright,
-                'finance_reversed' => $finance_reversed,
-                'health_upright' => $health_upright,
-                'health_reversed' => $health_reversed,
-                'keywords_upright' => $keywords_upright,
-                'keywords_reversed' => $keywords_reversed,
-                'yes_no_upright' => $yes_no_upright,
-                'yes_no_reversed' => $yes_no_reversed,
-                'advice_upright' => $advice_upright,
-                'advice_reversed' => $advice_reversed,
-                'advice_message' => $advice_message,
-                'custom_title' => $custom_title,
-                'custom_content' => $custom_content,
-                'custom_excerpt' => $custom_excerpt
-            ], ['slug' => $slug]);
-            if (!empty($wpdb->last_error)) {
-                return new WP_Error('db_error', 'Update failed: '.esc_html($wpdb->last_error).
-                    '. Query: '.esc_html($wpdb->last_query));
-            }
+        if ($existing_card) {
+            $wpdb->update("{$wpdb->prefix}tarot_cards", $card_data, ['id' => $existing_card->id]);
+            $card_id = $existing_card->id;
         } else {
-            // Insert new
-            $wpdb->insert($table, [
-                'name' => $name,
-                'slug' => $slug,
-                'arcana' => $arcana,
-                'number' => $number,
-                'deck' => $deck,
-                'image' => $image,
-                'description' => $description,
-                'meaning_upright' => $meaning_upright,
-                'meaning_reversed' => $meaning_reversed,
-                'love_upright' => $love_upright,
-                'love_reversed' => $love_reversed,
-                'career_upright' => $career_upright,
-                'career_reversed' => $career_reversed,
-                'finance_upright' => $finance_upright,
-                'finance_reversed' => $finance_reversed,
-                'health_upright' => $health_upright,
-                'health_reversed' => $health_reversed,
-                'keywords_upright' => $keywords_upright,
-                'keywords_reversed' => $keywords_reversed,
-                'yes_no_upright' => $yes_no_upright,
-                'yes_no_reversed' => $yes_no_reversed,
-                'advice_upright' => $advice_upright,
-                'advice_reversed' => $advice_reversed,
-                'advice_message' => $advice_message,
-                'custom_title' => $custom_title,
-                'custom_content' => $custom_content,
-                'custom_excerpt' => $custom_excerpt
-            ]);
-            if (!empty($wpdb->last_error)) {
-                return new WP_Error('db_error', 'Insert failed: '.esc_html($wpdb->last_error).
-                    '. Query: '.esc_html($wpdb->last_query));
+            $wpdb->insert("{$wpdb->prefix}tarot_cards", $card_data);
+            $card_id = $wpdb->insert_id;
+        }
+
+        // Import meanings
+        if (isset($card['meaning'])) {
+            // Import upright meanings
+            if (isset($card['meaning']['upright'])) {
+                $upright = $card['meaning']['upright'];
+                
+                // General meaning
+                if (isset($upright['general'])) {
+                    tarot_import_meaning($card_id, 'upright', 'general', $upright['general'], 
+                                       isset($upright['keywords']) ? implode(', ', $upright['keywords']) : '',
+                                       $upright['advice'] ?? '', $upright['message'] ?? '', $upright['yes_no'] ?? '');
+                }
+
+                // Context meanings
+                if (isset($upright['contexts'])) {
+                    foreach ($upright['contexts'] as $context) {
+                        tarot_import_meaning($card_id, 'upright', $context['type'], $context['text'], '', '', '', '');
+                    }
+                }
+            }
+
+            // Import reversed meanings
+            if (isset($card['meaning']['reversed'])) {
+                $reversed = $card['meaning']['reversed'];
+                
+                // General meaning
+                if (isset($reversed['general'])) {
+                    tarot_import_meaning($card_id, 'reversed', 'general', $reversed['general'], 
+                                       isset($reversed['keywords']) ? implode(', ', $reversed['keywords']) : '',
+                                       $reversed['advice'] ?? '', $reversed['message'] ?? '', $reversed['yes_no'] ?? '');
+                }
+
+                // Context meanings
+                if (isset($reversed['contexts'])) {
+                    foreach ($reversed['contexts'] as $context) {
+                        tarot_import_meaning($card_id, 'reversed', $context['type'], $context['text'], '', '', '', '');
+                    }
+                }
+            }
+        }
+
+        // Import content
+        if (isset($card['content'])) {
+            $content_data = [
+                'card_id' => $card_id,
+                'title' => $card['content']['seo']['title'] ?? '',
+                'content' => $card['content']['body'] ?? '',
+                'excerpt' => $card['content']['seo']['description'] ?? '',
+                'sections' => isset($card['content']['sections']) ? json_encode($card['content']['sections']) : '',
+                'extra' => isset($card['extra']) ? json_encode($card['extra']) : ''
+            ];
+
+            // Check if content exists
+            $existing_content = $wpdb->get_row($wpdb->prepare(
+                "SELECT id FROM {$wpdb->prefix}tarot_card_contents WHERE card_id=%d",
+                $card_id
+            ));
+
+            if ($existing_content) {
+                $wpdb->update("{$wpdb->prefix}tarot_card_contents", $content_data, ['id' => $existing_content->id]);
+            } else {
+                $wpdb->insert("{$wpdb->prefix}tarot_card_contents", $content_data);
             }
         }
 
@@ -173,4 +146,33 @@ function tarot_import_from_json() {
     }
 
     return $imported;
+}
+
+function tarot_import_meaning($card_id, $type, $context, $meaning, $keywords, $advice, $message, $yes_no) {
+    global $wpdb;
+    
+    $table = $wpdb->prefix . 'tarot_card_meanings';
+    
+    // Check if meaning exists
+    $existing = $wpdb->get_row($wpdb->prepare(
+        "SELECT id FROM $table WHERE card_id=%d AND type=%s AND context=%s",
+        $card_id, $type, $context
+    ));
+
+    $data = [
+        'card_id' => $card_id,
+        'type' => $type,
+        'context' => $context,
+        'meaning' => $meaning,
+        'keywords' => $keywords,
+        'advice' => $advice,
+        'message' => $message,
+        'yes_no' => $yes_no
+    ];
+
+    if ($existing) {
+        $wpdb->update($table, $data, ['id' => $existing->id]);
+    } else {
+        $wpdb->insert($table, $data);
+    }
 }
