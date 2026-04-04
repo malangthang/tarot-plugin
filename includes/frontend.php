@@ -131,14 +131,93 @@ add_action('template_redirect', function () {
     exit;
 });
 
-add_shortcode('tarot_3card', function () {
+add_shortcode('tarot_reader', function ($atts) {
+    wp_enqueue_script('jquery');
+    wp_enqueue_script('jquery-ui-core');
+    wp_enqueue_script('jquery-ui-tabs');
+    wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
+    wp_enqueue_style('tarot-reader-css', plugins_url('assets/css/tarot-reader.css', TAROT_FILE));
+    wp_enqueue_script('tarot-reader-js', plugins_url('assets/js/tarot-reader.js', TAROT_FILE), ['jquery'], '1.0', true);
+
+    wp_localize_script('tarot-reader-js', 'tarot_ajax', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'rest_url' => rest_url('tarot/v1/'),
+        'nonce' => wp_create_nonce('tarot_reader_nonce')
+    ]);
+
     ob_start(); ?>
 
-    <input id="q" placeholder="Nhập câu hỏi">
-    <button id="start">Xem bài</button>
+    <div id="tarot-reader" class="tarot-reader-container">
+        <!-- Spread Selection -->
+        <div id="spread-selection" class="spread-selection">
+            <h3>Choose Your Spread</h3>
+            <div class="spread-options">
+                <div class="spread-option" data-spread="1card">
+                    <h4>Single Card</h4>
+                    <p>Quick insight for simple questions</p>
+                    <span class="card-count">1 card</span>
+                </div>
+                <div class="spread-option active" data-spread="3card">
+                    <h4>Past, Present, Future</h4>
+                    <p>Classic 3-card spread for timeline reading</p>
+                    <span class="card-count">3 cards</span>
+                </div>
+                <div class="spread-option" data-spread="celtic-cross">
+                    <h4>Celtic Cross</h4>
+                    <p>Comprehensive 10-card spread</p>
+                    <span class="card-count">10 cards</span>
+                </div>
+                <div class="spread-option" data-spread="horseshoe">
+                    <h4>Horseshoe</h4>
+                    <p>7-card spread for detailed guidance</p>
+                    <span class="card-count">7 cards</span>
+                </div>
+            </div>
+        </div>
 
-    <div id="result"></div>
-    <div id="ai"></div>
+        <!-- Question Input -->
+        <div id="question-section" class="question-section">
+            <h3>What is your question?</h3>
+            <textarea id="tarot-question" placeholder="Enter your question here..." rows="3"></textarea>
+            <button id="start-reading" class="start-reading-btn">Begin Reading</button>
+        </div>
+
+        <!-- Shuffle Animation -->
+        <div id="shuffle-section" class="shuffle-section" style="display: none;">
+            <h3>Shuffling the cards...</h3>
+            <div class="card-deck">
+                <div class="card back" id="deck-card-1"></div>
+                <div class="card back" id="deck-card-2"></div>
+                <div class="card back" id="deck-card-3"></div>
+                <div class="card back" id="deck-card-4"></div>
+                <div class="card back" id="deck-card-5"></div>
+            </div>
+            <div class="shuffle-controls">
+                <button id="shuffle-btn" class="shuffle-btn">Shuffle</button>
+                <button id="draw-cards-btn" class="draw-cards-btn" style="display: none;">Draw Cards</button>
+            </div>
+        </div>
+
+        <!-- Reading Results -->
+        <div id="reading-results" class="reading-results" style="display: none;">
+            <h3>Your Reading</h3>
+            <div id="cards-display" class="cards-display"></div>
+            <div id="reading-interpretation" class="reading-interpretation">
+                <h4>Interpretation</h4>
+                <div id="interpretation-content"></div>
+            </div>
+            <div class="reading-actions">
+                <button id="new-reading" class="new-reading-btn">New Reading</button>
+                <button id="save-reading" class="save-reading-btn">Save Reading</button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Consulting the cards...</p>
+        </div>
+    </div>
 
     <?php return ob_get_clean();
 });
