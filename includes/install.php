@@ -18,11 +18,13 @@ function tarot_install() {
         deck VARCHAR(100),
         image VARCHAR(255),
         description TEXT,
+        meta_data LONGTEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY slug (slug),
         KEY arcana (arcana),
-        KEY suit (suit)
+        KEY suit (suit),
+        KEY slug_arcana (slug, arcana)
     ) $charset_collate;");
 
     // 2. Meanings

@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) exit;
 
 define('TAROT_PATH', plugin_dir_path(__FILE__));
 define('TAROT_URL', plugin_dir_url(__FILE__));
+define('TAROT_FILE', __FILE__);
 
 register_activation_hook(__FILE__, 'tarot_install');
 register_deactivation_hook(__FILE__, function () {

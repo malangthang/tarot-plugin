@@ -1,61 +1,279 @@
 <?php
 
-add_action('wp_ajax_tarot_draw_3', 'tarot_draw_3');
-add_action('wp_ajax_nopriv_tarot_draw_3', 'tarot_draw_3');
+// REST API Endpoints
+add_action('rest_api_init', 'tarot_register_api_routes');
 
-function tarot_draw_3() {
+function tarot_register_api_routes() {
+    register_rest_route('tarot/v1', '/draw', [
+        'methods' => 'GET',
+        'callback' => 'tarot_api_draw_card',
+        'permission_callback' => '__return_true'
+    ]);
+
+    register_rest_route('tarot/v1', '/spread', [
+        'methods' => 'GET',
+        'callback' => 'tarot_api_get_spread',
+        'permission_callback' => '__return_true'
+    ]);
+
+    register_rest_route('tarot/v1', '/reading', [
+        'methods' => 'POST',
+        'callback' => 'tarot_api_create_reading',
+        'permission_callback' => '__return_true'
+    ]);
+
+    register_rest_route('tarot/v1', '/reading/(?P<id>\d+)', [
+        'methods' => 'GET',
+        'callback' => 'tarot_api_get_reading',
+        'permission_callback' => '__return_true'
+    ]);
+}
+
+// Draw single card
+function tarot_api_draw_card($request) {
     global $wpdb;
-    $table = $wpdb->prefix . 'tarot_cards';
+    $cards_table = $wpdb->prefix . 'tarot_cards';
+    $meanings_table = $wpdb->prefix . 'tarot_card_meanings';
 
-    $cards = $wpdb->get_results("SELECT * FROM $table ORDER BY RAND() LIMIT 3", ARRAY_A);
+    // Get random card
+    $card = $wpdb->get_row("SELECT * FROM $cards_table ORDER BY RAND() LIMIT 1", ARRAY_A);
 
-    $result = [];
+    if (!$card) {
+        return new WP_Error('no_cards', 'No cards found', ['status' => 404]);
+    }
 
-    foreach ($cards as $c) {
-        $result[] = [
-            'card' => $c,
-            'reversed' => rand(0,1)
+    // Get meanings
+    $meanings = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM $meanings_table WHERE card_id = %d",
+        $card['id']
+    ), ARRAY_A);
+
+    // Organize meanings
+    $card_meanings = [];
+    foreach ($meanings as $meaning) {
+        $card_meanings[$meaning['type']][$meaning['context']] = $meaning;
+    }
+
+    // Random upright/reversed
+    $is_reversed = rand(0, 1);
+
+    return [
+        'card' => $card,
+        'meanings' => $card_meanings,
+        'is_reversed' => $is_reversed,
+        'orientation' => $is_reversed ? 'reversed' : 'upright'
+    ];
+}
+
+// Get spread with positions
+function tarot_api_get_spread($request) {
+    global $wpdb;
+    $spreads_table = $wpdb->prefix . 'tarot_spreads';
+    $positions_table = $wpdb->prefix . 'tarot_spread_positions';
+
+    $type = $request->get_param('type');
+
+    // Default spreads
+    $default_spreads = [
+        '1card' => ['name' => 'Single Card', 'total_cards' => 1],
+        '3card' => ['name' => 'Past, Present, Future', 'total_cards' => 3],
+        'celtic-cross' => ['name' => 'Celtic Cross', 'total_cards' => 10],
+        'horseshoe' => ['name' => 'Horseshoe', 'total_cards' => 7]
+    ];
+
+    if (!isset($default_spreads[$type])) {
+        $type = '3card'; // default
+    }
+
+    $spread_data = $default_spreads[$type];
+
+    // Check if spread exists in DB, if not create it
+    $spread = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $spreads_table WHERE slug = %s",
+        $type
+    ));
+
+    if (!$spread) {
+        $wpdb->insert($spreads_table, [
+            'name' => $spread_data['name'],
+            'slug' => $type,
+            'total_cards' => $spread_data['total_cards'],
+            'description' => $spread_data['name'] . ' spread'
+        ]);
+        $spread_id = $wpdb->insert_id;
+
+        // Create positions
+        $positions = get_default_positions($type);
+        foreach ($positions as $pos) {
+            $wpdb->insert($positions_table, [
+                'spread_id' => $spread_id,
+                'position_order' => $pos['order'],
+                'name' => $pos['name'],
+                'description' => $pos['description']
+            ]);
+        }
+    } else {
+        $spread_id = $spread->id;
+    }
+
+    // Get positions
+    $positions = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM $positions_table WHERE spread_id = %d ORDER BY position_order",
+        $spread_id
+    ), ARRAY_A);
+
+    return [
+        'spread' => [
+            'id' => $spread_id,
+            'name' => $spread_data['name'],
+            'slug' => $type,
+            'total_cards' => $spread_data['total_cards']
+        ],
+        'positions' => $positions
+    ];
+}
+
+// Create reading
+function tarot_api_create_reading($request) {
+    global $wpdb;
+    $readings_table = $wpdb->prefix . 'tarot_readings';
+    $cards_table = $wpdb->prefix . 'tarot_cards';
+    $meanings_table = $wpdb->prefix . 'tarot_card_meanings';
+
+    $params = $request->get_json_params();
+    $question = sanitize_text_field($params['question'] ?? '');
+    $spread_type = sanitize_text_field($params['spread_type'] ?? '3card');
+
+    // Get spread
+    $spread_response = tarot_api_get_spread(new WP_REST_Request('GET', "/tarot/v1/spread?type=$spread_type"));
+    $spread = $spread_response['spread'];
+    $positions = $spread_response['positions'];
+
+    // Draw cards without duplicates
+    $total_cards = $spread['total_cards'];
+    $drawn_cards = [];
+    $used_card_ids = [];
+
+    for ($i = 0; $i < $total_cards; $i++) {
+        do {
+            $card = $wpdb->get_row("SELECT * FROM $cards_table ORDER BY RAND() LIMIT 1", ARRAY_A);
+        } while (in_array($card['id'], $used_card_ids));
+
+        $used_card_ids[] = $card['id'];
+
+        // Get meanings
+        $meanings = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM $meanings_table WHERE card_id = %d",
+            $card['id']
+        ), ARRAY_A);
+
+        $card_meanings = [];
+        foreach ($meanings as $meaning) {
+            $card_meanings[$meaning['type']][$meaning['context']] = $meaning;
+        }
+
+        $is_reversed = rand(0, 1);
+
+        $drawn_cards[] = [
+            'position' => $positions[$i]['name'] ?? "Position " . ($i + 1),
+            'position_description' => $positions[$i]['description'] ?? '',
+            'card' => $card,
+            'meanings' => $card_meanings,
+            'is_reversed' => $is_reversed,
+            'orientation' => $is_reversed ? 'reversed' : 'upright'
         ];
     }
 
-    wp_send_json($result);
+    // Save reading
+    $reading_data = [
+        'user_id' => get_current_user_id(),
+        'question' => $question,
+        'spread_id' => $spread['id'],
+        'cards_json' => wp_json_encode($drawn_cards),
+        'result_json' => wp_json_encode([
+            'spread' => $spread,
+            'positions' => $positions,
+            'question' => $question
+        ])
+    ];
+
+    $wpdb->insert($readings_table, $reading_data);
+    $reading_id = $wpdb->insert_id;
+
+    return [
+        'reading_id' => $reading_id,
+        'spread' => $spread,
+        'cards' => $drawn_cards,
+        'question' => $question
+    ];
 }
 
-// AI
-add_action('wp_ajax_tarot_ai', 'tarot_ai');
-add_action('wp_ajax_nopriv_tarot_ai', 'tarot_ai');
+// Get reading by ID
+function tarot_api_get_reading($request) {
+    global $wpdb;
+    $readings_table = $wpdb->prefix . 'tarot_readings';
 
-function tarot_ai() {
+    $reading_id = $request->get_param('id');
 
-    $question = $_POST['question'];
-    $cards = $_POST['cards'];
+    $reading = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $readings_table WHERE id = %d",
+        $reading_id
+    ), ARRAY_A);
 
-    $prompt = "Câu hỏi: $question\n";
-
-    foreach ($cards as $i => $c) {
-        $name = $c['card']['name'];
-        $meaning = $c['reversed'] ? $c['card']['meaning_reversed'] : $c['card']['meaning_upright'];
-        $pos = ['Past','Present','Future'][$i];
-
-        $prompt .= "$pos: $name - $meaning\n";
+    if (!$reading) {
+        return new WP_Error('reading_not_found', 'Reading not found', ['status' => 404]);
     }
 
-    $res = wp_remote_post("https://api.openai.com/v1/chat/completions", [
-        'headers' => [
-            'Authorization' => 'Bearer YOUR_KEY',
-            'Content-Type' => 'application/json'
-        ],
-        'body' => json_encode([
-            'model' => 'gpt-4o-mini',
-            'messages' => [
-                ['role'=>'user','content'=>$prompt]
-            ]
-        ])
-    ]);
+    return [
+        'reading' => $reading,
+        'cards' => json_decode($reading['cards_json'], true),
+        'result' => json_decode($reading['result_json'], true),
+        'ai_response' => $reading['ai_response']
+    ];
+}
 
-    $body = json_decode(wp_remote_retrieve_body($res), true);
+// Helper function for default positions
+function get_default_positions($type) {
+    $positions = [];
 
-    wp_send_json([
-        'text' => $body['choices'][0]['message']['content']
-    ]);
+    switch ($type) {
+        case '1card':
+            $positions[] = ['order' => 1, 'name' => 'Focus', 'description' => 'The main focus of your question'];
+            break;
+
+        case '3card':
+            $positions[] = ['order' => 1, 'name' => 'Past', 'description' => 'What has led to the current situation'];
+            $positions[] = ['order' => 2, 'name' => 'Present', 'description' => 'The current situation'];
+            $positions[] = ['order' => 3, 'name' => 'Future', 'description' => 'What will come to pass'];
+            break;
+
+        case 'celtic-cross':
+            $positions = [
+                ['order' => 1, 'name' => 'Present', 'description' => 'The present situation'],
+                ['order' => 2, 'name' => 'Challenge', 'description' => 'The challenge or obstacle'],
+                ['order' => 3, 'name' => 'Distant Past', 'description' => 'Events from the distant past'],
+                ['order' => 4, 'name' => 'Possible Outcome', 'description' => 'The possible outcome'],
+                ['order' => 5, 'name' => 'Recent Past', 'description' => 'Events from the recent past'],
+                ['order' => 6, 'name' => 'Near Future', 'description' => 'Events in the near future'],
+                ['order' => 7, 'name' => 'Approach', 'description' => 'Your approach to the situation'],
+                ['order' => 8, 'name' => 'External Influences', 'description' => 'External influences'],
+                ['order' => 9, 'name' => 'Hopes and Fears', 'description' => 'Your hopes and fears'],
+                ['order' => 10, 'name' => 'Final Outcome', 'description' => 'The final outcome']
+            ];
+            break;
+
+        case 'horseshoe':
+            $positions = [
+                ['order' => 1, 'name' => 'Past', 'description' => 'The past influencing the situation'],
+                ['order' => 2, 'name' => 'Present', 'description' => 'The current situation'],
+                ['order' => 3, 'name' => 'Future', 'description' => 'The future outcome'],
+                ['order' => 4, 'name' => 'Obstacles', 'description' => 'Obstacles to overcome'],
+                ['order' => 5, 'name' => 'External Influences', 'description' => 'External influences'],
+                ['order' => 6, 'name' => 'Hopes and Fears', 'description' => 'Your hopes and fears'],
+                ['order' => 7, 'name' => 'Advice', 'description' => 'Advice for the situation']
+            ];
+            break;
+    }
+
+    return $positions;
 }
