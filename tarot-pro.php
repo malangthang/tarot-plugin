@@ -16,6 +16,7 @@ register_deactivation_hook(__FILE__, function () {
 
 require_once TAROT_PATH . 'includes/install.php';
 require_once TAROT_PATH . 'includes/import.php';
+require_once TAROT_PATH . 'includes/interpreter.php';
 require_once TAROT_PATH . 'includes/api.php';
 require_once TAROT_PATH . 'includes/admin.php';
 require_once TAROT_PATH . 'includes/frontend.php';

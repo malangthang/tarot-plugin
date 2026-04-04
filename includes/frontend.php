@@ -200,13 +200,8 @@ add_shortcode('tarot_reader', function ($atts) {
 
         <!-- Reading Results -->
         <div id="reading-results" class="reading-results" style="display: none;">
-            <h3>Your Reading</h3>
-            <div id="cards-display" class="cards-display"></div>
-            <div id="reading-interpretation" class="reading-interpretation">
-                <h4>Interpretation</h4>
-                <div id="interpretation-content"></div>
-            </div>
-            <div class="reading-actions">
+            <!-- Content will be populated by JavaScript -->
+            <div class="reading-actions" style="margin-top: 40px;">
                 <button id="new-reading" class="new-reading-btn">New Reading</button>
                 <button id="save-reading" class="save-reading-btn">Save Reading</button>
             </div>

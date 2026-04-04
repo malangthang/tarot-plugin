@@ -348,3 +348,113 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Reading Interpretation Section */
+.reading-header {
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.reading-header h3 {
+    margin: 0 0 15px 0;
+    color: #ffed4e;
+    font-size: 1.8em;
+}
+
+.reading-question {
+    color: #ccc;
+    font-size: 1.1em;
+}
+
+.main-interpretation {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.main-interpretation h4 {
+    color: #ffd700;
+    margin-top: 0;
+    font-size: 1.3em;
+}
+
+.interpretation-text {
+    color: #fff;
+    line-height: 1.8;
+    font-size: 1.05em;
+    margin: 15px 0;
+}
+
+.yes-no-answer {
+    background: linear-gradient(45deg, #27ae60, #229954);
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.2em;
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+/* Cards Detail Section */
+.cards-detail-section {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.toggle-cards {
+    color: #ffd700;
+    cursor: pointer;
+    user-select: none;
+    padding: 15px;
+    background: rgba(255, 215, 0, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin: 0 0 20px 0;
+}
+
+.toggle-cards:hover,
+.toggle-cards.expanded {
+    background: rgba(255, 215, 0, 0.15);
+    transform: translateX(10px);
+}
+
+.cards-display.tarot-card-result {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.card-position {
+    color: #ffed4e;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.card-orientation-badge {
+    background: rgba(255, 215, 0, 0.3);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.cards-display .tarot-card-result .card-name {
+    color: #fff;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}

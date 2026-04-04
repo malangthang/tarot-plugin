@@ -140,12 +140,17 @@ function tarot_api_create_reading($request) {
     $cards_table = $wpdb->prefix . 'tarot_cards';
     $meanings_table = $wpdb->prefix . 'tarot_card_meanings';
 
+    require_once TAROT_PATH . 'includes/interpreter.php';
+
     $params = $request->get_json_params();
     $question = sanitize_text_field($params['question'] ?? '');
     $spread_type = sanitize_text_field($params['spread_type'] ?? '3card');
 
     // Get spread
     $spread_response = tarot_api_get_spread(new WP_REST_Request('GET', "/tarot/v1/spread?type=$spread_type"));
+    if (is_wp_error($spread_response)) {
+        return $spread_response;
+    }
     $spread = $spread_response['spread'];
     $positions = $spread_response['positions'];
 
@@ -175,8 +180,6 @@ function tarot_api_create_reading($request) {
         $is_reversed = rand(0, 1);
 
         $drawn_cards[] = [
-            'position' => $positions[$i]['name'] ?? "Position " . ($i + 1),
-            'position_description' => $positions[$i]['description'] ?? '',
             'card' => $card,
             'meanings' => $card_meanings,
             'is_reversed' => $is_reversed,
@@ -184,17 +187,16 @@ function tarot_api_create_reading($request) {
         ];
     }
 
+    // Generate interpretation
+    $interpretation = TarotInterpreter::interpret($drawn_cards, $spread_type, $question);
+
     // Save reading
     $reading_data = [
         'user_id' => get_current_user_id(),
         'question' => $question,
         'spread_id' => $spread['id'],
         'cards_json' => wp_json_encode($drawn_cards),
-        'result_json' => wp_json_encode([
-            'spread' => $spread,
-            'positions' => $positions,
-            'question' => $question
-        ])
+        'result_json' => wp_json_encode($interpretation)
     ];
 
     $wpdb->insert($readings_table, $reading_data);
@@ -202,9 +204,16 @@ function tarot_api_create_reading($request) {
 
     return [
         'reading_id' => $reading_id,
+        'spread_type' => $spread_type,
         'spread' => $spread,
-        'cards' => $drawn_cards,
-        'question' => $question
+        'question' => $question,
+        'cards' => array_map(function($card_data) {
+            return [
+                'card' => $card_data['card']['name'],
+                'is_reversed' => $card_data['is_reversed']
+            ];
+        }, $drawn_cards),
+        'interpretation' => $interpretation
     ];
 }
 

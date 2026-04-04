@@ -126,89 +126,57 @@ jQuery(document).ready(function($) {
             $('#shuffle-section').hide();
             $('#reading-results').show();
 
-            const cardsHtml = reading.cards.map((cardData, index) => {
-                const card = cardData.card;
-                const orientation = cardData.is_reversed ? 'reversed' : 'upright';
-                const meaning = cardData.is_reversed ?
-                    (cardData.meanings.reversed?.general?.meaning || 'No meaning available') :
-                    (cardData.meanings.upright?.general?.meaning || 'No meaning available');
+            const interp = reading.interpretation;
 
-                return `
-                    <div class="tarot-card-result" data-index="${index}">
-                        <div class="card-position">${cardData.position}</div>
-                        <div class="card-name">${card.name}</div>
-                        <div class="card-orientation">${orientation}</div>
-                        <div class="card-meaning">${meaning.substring(0, 150)}...</div>
-                    </div>
-                `;
-            }).join('');
+            // Display title and question
+            let html = '<div class="reading-header">';
+            html += '<h3>' + interp.title + '</h3>';
+            html += '<div class="reading-question">' + interp.summary + '</div>';
+            html += '</div>';
 
-            $('#cards-display').html(cardsHtml);
+            // Display main interpretation
+            html += '<div class="main-interpretation">';
+            html += '<h4>Your Reading</h4>';
+            html += '<p class="interpretation-text">' + interp.interpretation + '</p>';
 
-            // Add flip animation to cards
-            $('.tarot-card-result').on('click', this.flipCard.bind(this));
-
-            // Generate AI interpretation
-            this.generateInterpretation(reading);
-        },
-
-        flipCard: function(e) {
-            const cardElement = $(e.currentTarget);
-            const index = cardElement.data('index');
-            const cardData = this.currentReading.cards[index];
-
-            if (cardElement.hasClass('flipped')) {
-                cardElement.removeClass('flipped');
-                cardElement.html(`
-                    <div class="card-position">${cardData.position}</div>
-                    <div class="card-name">${cardData.card.name}</div>
-                    <div class="card-orientation">${cardData.is_reversed ? 'reversed' : 'upright'}</div>
-                    <div class="card-meaning">${(cardData.is_reversed ?
-                        (cardData.meanings.reversed?.general?.meaning || 'No meaning available') :
-                        (cardData.meanings.upright?.general?.meaning || 'No meaning available')).substring(0, 150)}...</div>
-                `);
-            } else {
-                cardElement.addClass('flipped');
-                const fullMeaning = cardData.is_reversed ?
-                    (cardData.meanings.reversed?.general?.meaning || 'No meaning available') :
-                    (cardData.meanings.upright?.general?.meaning || 'No meaning available');
-
-                cardElement.html(`
-                    <div class="card-position">${cardData.position}</div>
-                    <div class="card-name">${cardData.card.name}</div>
-                    <div class="card-orientation">${cardData.is_reversed ? 'reversed' : 'upright'}</div>
-                    <div class="card-meaning">${fullMeaning}</div>
-                `);
+            // Show answer for single card
+            if (interp.answer) {
+                html += '<div class="yes-no-answer"><strong>Answer: ' + interp.answer + '</strong></div>';
             }
-        },
 
-        generateInterpretation: function(reading) {
-            $('#interpretation-content').html('<p>Generating interpretation...</p>');
+            html += '</div>';
 
-            // For now, create a simple interpretation
-            // In a real implementation, you might call an AI service
-            const interpretation = this.createSimpleInterpretation(reading);
-            $('#interpretation-content').html(`<p>${interpretation}</p>`);
-        },
+            // Display individual cards in collapsible section
+            html += '<div class="cards-detail-section">';
+            html += '<h4 class="toggle-cards">📖 Click to see individual cards</h4>';
+            html += '<div class="cards-display" style="display:none;">';
 
-        createSimpleInterpretation: function(reading) {
-            const cards = reading.cards;
-            let interpretation = `Your question: "${reading.question}"<br><br>`;
-
-            cards.forEach((cardData, index) => {
-                const card = cardData.card;
-                const position = cardData.position;
-                const orientation = cardData.is_reversed ? 'reversed' : 'upright';
-
-                interpretation += `<strong>${position}:</strong> ${card.name} (${orientation})<br>`;
-                interpretation += `This suggests: ${cardData.is_reversed ?
-                    (cardData.meanings.reversed?.general?.meaning || 'Focus on inner wisdom') :
-                    (cardData.meanings.upright?.general?.meaning || 'New beginnings and opportunities')}<br><br>`;
+            interp.cards_display.forEach((card_data, index) => {
+                html += '<div class="tarot-card-result">';
+                html += '<div class="card-header">';
+                html += '<strong class="card-position">' + card_data.position + '</strong>';
+                html += '<span class="card-orientation-badge">' + card_data.orientation + '</span>';
+                html += '</div>';
+                html += '<div class="card-name">' + card_data.card_name + '</div>';
+                html += '<div class="card-meaning">' + this.truncate(card_data.meaning, 150) + '</div>';
+                html += '</div>';
             });
 
-            interpretation += '<em>Remember, tarot readings are for guidance and reflection. Trust your intuition in interpreting these messages.</em>';
+            html += '</div>';
+            html += '</div>';
 
-            return interpretation;
+            $('#reading-results').html(html);
+
+            // Toggle cards display
+            $('.toggle-cards').on('click', function() {
+                $(this).next('.cards-display').slideToggle(300);
+                $(this).toggleClass('expanded');
+            });
+        },
+
+        truncate: function(text, length) {
+            if (text.length <= length) return text;
+            return text.substring(0, length) + '...';
         },
 
         newReading: function() {
@@ -220,15 +188,20 @@ jQuery(document).ready(function($) {
             $('#tarot-question').val('');
             $('#draw-cards-btn').hide();
             $('#shuffle-btn').show();
+
+            // Reset card positions
+            const cards = $('.card-deck .card');
+            cards.css({
+                'transform': 'translate(0, 0) rotate(0deg)',
+                'transition': 'transform 0.5s ease'
+            });
         },
 
         saveReading: function() {
             if (!this.currentReading) return;
 
-            // In a real implementation, you might save to user account
-            alert('Reading saved! (This is a demo - in production this would save to your account)');
+            alert('Reading saved! (In production this would save to your account)');
 
-            // You could also provide a way to email the reading or save to localStorage
             const readingData = {
                 question: this.currentReading.question,
                 spread: this.currentReading.spread,
@@ -242,33 +215,4 @@ jQuery(document).ready(function($) {
 
     // Initialize the tarot reader
     TarotReader.init();
-
-    // Legacy support for old shortcode
-    $('#start').on('click', function() {
-        const question = $('#q').val();
-        if (!question) {
-            alert('Please enter a question');
-            return;
-        }
-
-        $.ajax({
-            url: tarot_ajax.ajax_url,
-            method: 'POST',
-            data: {
-                action: 'tarot_draw_3',
-                question: question
-            },
-            success: function(response) {
-                let html = '<h3>Your 3-Card Reading</h3>';
-                response.forEach(function(card, index) {
-                    const pos = ['Past', 'Present', 'Future'][index];
-                    html += `<div class="card-result">
-                        <h4>${pos}: ${card.card.name}</h4>
-                        <p>${card.reversed ? 'Reversed' : 'Upright'}</p>
-                    </div>`;
-                });
-                $('#result').html(html);
-            }
-        });
-    });
 });
